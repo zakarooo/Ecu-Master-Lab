@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "postgresql://ecu_user:ecu_password@localhost:5432/ecu_master_lab"
 
-    UPLOAD_DIR: Path = Path(os.getenv("UPLOAD_DIR", "../uploads"))
+    UPLOAD_DIR: Path = Path(os.getenv("UPLOAD_DIR", "../uploads")).resolve()
     MAX_FILE_SIZE: int = 50 * 1024 * 1024
 
     REDIS_URL: str = ""

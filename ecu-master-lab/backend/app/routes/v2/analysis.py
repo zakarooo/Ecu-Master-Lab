@@ -157,7 +157,7 @@ def upload_ecu_file(
             ECUFileCreate(
                 project_id=project_id,
                 filename=file.filename or safe_name,
-                file_path=str(dest_path),
+                file_path=str(dest_path.resolve()),
                 file_size=file_size,
                 sha256=sha256,
                 md5=None,
@@ -168,7 +168,7 @@ def upload_ecu_file(
 
     analysis_result = None
     if run_analysis:
-        file_path = ecu_file.file_path
+        file_path = str(Path(ecu_file.file_path).resolve())
         if not file_path or not os.path.isfile(file_path):
             raise HTTPException(400, "ECU file binary not found on disk")
 
@@ -301,13 +301,14 @@ def run_analysis(
     if not ecu_file:
         raise HTTPException(404, "ECU file not found")
 
-    if not ecu_file.file_path or not os.path.isfile(ecu_file.file_path):
+    file_path = str(Path(ecu_file.file_path).resolve())
+    if not file_path or not os.path.isfile(file_path):
         raise HTTPException(400, "ECU file binary not found on disk")
 
-    with open(ecu_file.file_path, "rb") as f:
+    with open(file_path, "rb") as f:
         raw_data = f.read()
 
-    engine_result = _run_engine_analysis(ecu_file.file_path, raw_data, db=db)
+    engine_result = _run_engine_analysis(file_path, raw_data, db=db)
 
     svc_analysis = AnalysisService(db)
     created = svc_analysis.save_analysis(

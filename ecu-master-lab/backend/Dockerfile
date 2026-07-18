@@ -21,7 +21,7 @@ COPY --from=builder /install /usr/local
 
 COPY ecu-master-lab/backend/ .
 
-RUN mkdir -p uploads/ecu_files
+RUN mkdir -p /uploads/ecu_files
 
 EXPOSE 8000
 
