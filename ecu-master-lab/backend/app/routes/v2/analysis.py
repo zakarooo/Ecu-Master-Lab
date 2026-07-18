@@ -141,7 +141,24 @@ def upload_ecu_file(
     file_svc = ECUFileService(db)
     existing = file_svc.get_by_sha256(sha256)
     if existing:
-        ecu_file = existing
+        existing_path = str(Path(existing.file_path).resolve()) if existing.file_path else ""
+        if existing_path and os.path.isfile(existing_path):
+            ecu_file = existing
+        else:
+            safe_name = "{}_{}".format(uuid.uuid4().hex[:12], file.filename or "upload")
+            dest_dir = UPLOAD_DIR
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            dest_path = dest_dir / safe_name
+
+            with open(str(dest_path), "wb") as f:
+                f.write(content)
+
+            existing.file_path = str(dest_path.resolve())
+            existing.filename = file.filename or existing.filename
+            existing.file_size = file_size
+            db.commit()
+            db.refresh(existing)
+            ecu_file = existing
     else:
         safe_name = "{}_{}".format(uuid.uuid4().hex[:12], file.filename or "upload")
         dest_dir = UPLOAD_DIR
