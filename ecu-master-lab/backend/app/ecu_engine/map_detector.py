@@ -441,21 +441,30 @@ def _scan_signatures(
 def _dedup(maps: List[DetectedMap]) -> List[DetectedMap]:
     if not maps:
         return []
-    sm = sorted(maps, key=lambda m: (m.offset, -m.size))
-    res: List[DetectedMap] = []
+
+    # Separate DAMOS and heuristic maps
+    damos_maps = [m for m in maps if getattr(m, 'damos_map_id', 0) > 0]
+    heuristic_maps = [m for m in maps if getattr(m, 'damos_map_id', 0) == 0]
+
+    # Keep all DAMOS maps (authoritative knowledge), dedup heuristics only
+    sm = sorted(heuristic_maps, key=lambda m: (m.offset, -m.size))
+    deduped: List[DetectedMap] = []
     for dm in sm:
         ov = False
-        for ex in res:
+        for ex in deduped:
             if dm.offset < ex.offset + ex.size and ex.offset < dm.offset + dm.size:
                 ov = True
                 if dm.entropy > ex.entropy:
-                    res.remove(ex)
-                    res.append(dm)
+                    deduped.remove(ex)
+                    deduped.append(dm)
                 break
         if not ov:
-            res.append(dm)
-    res.sort(key=lambda m: m.offset)
-    return res
+            deduped.append(dm)
+
+    # Combine: all DAMOS + deduped heuristics
+    all_maps = damos_maps + deduped
+    all_maps.sort(key=lambda m: m.offset)
+    return all_maps
 
 
 def _confidence(maps: List[DetectedMap]) -> float:

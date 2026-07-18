@@ -161,7 +161,7 @@ class SemanticSearchEngine:
         rows = self.session.execute(text(f"""
             SELECT
                 id, map_name, category, ecu_model_name, offset_hex,
-                offset_dec, size_bytes, unit,
+                offset_dec, size_bytes,
                 1 - (embedding <=> :emb::vector) as similarity
             FROM known_maps
             WHERE {where_sql}
@@ -173,8 +173,8 @@ class SemanticSearchEngine:
             {
                 "id": r[0], "name": r[1], "category": r[2],
                 "ecu_model": r[3], "offset_hex": r[4],
-                "offset_dec": r[5], "size_bytes": r[6], "unit": r[7],
-                "similarity": round(float(r[8]), 4),
+                "offset_dec": r[5], "size_bytes": r[6],
+                "similarity": round(float(r[7]), 4),
             }
             for r in rows
         ]
@@ -216,7 +216,7 @@ class SemanticSearchEngine:
         rows = self.session.execute(text(f"""
             SELECT
                 id, map_name, category, ecu_model_name, offset_hex,
-                offset_dec, size_bytes, unit
+                offset_dec, size_bytes
             FROM known_maps
             WHERE {where_sql}
             ORDER BY map_name
@@ -236,7 +236,7 @@ class SemanticSearchEngine:
             results.append({
                 "id": r[0], "name": r[1], "category": r[2],
                 "ecu_model": r[3], "offset_hex": r[4],
-                "offset_dec": r[5], "size_bytes": r[6], "unit": r[7],
+                "offset_dec": r[5], "size_bytes": r[6],
                 "similarity": round(score, 4),
             })
 

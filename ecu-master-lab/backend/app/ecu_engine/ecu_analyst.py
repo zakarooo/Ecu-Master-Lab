@@ -123,7 +123,7 @@ class ECUAnalystAgent:
         damos_maps = []
         if use_damos and result.ecu_identification:
             ecu_name = result.ecu_identification.ecu_name
-            damos_maps = self._load_damos_maps(ecu_name)
+            damos_maps = self._load_damos_maps(ecu_name, file_size=len(binary_data))
             result.damos_maps = damos_maps
             logger.info("Loaded %d DAMOS maps for %s", len(damos_maps), ecu_name)
 
@@ -204,26 +204,36 @@ class ECUAnalystAgent:
 
         return result
 
-    def _load_damos_maps(self, ecu_name: str) -> List[dict]:
-        """Load DAMOS maps for an ECU from DB."""
+    def _load_damos_maps(self, ecu_name: str, file_size: int = 0) -> List[dict]:
+        """Load DAMOS maps for an ECU from DB, normalizing offsets to file space."""
         try:
             rows = self.session.execute(text("""
                 SELECT id, map_name, category, offset_hex, offset_dec,
-                       size_bytes, unit, ecu_model_name
+                       size_bytes, ecu_model_name
                 FROM known_maps
                 WHERE ecu_model_name LIKE :ecu
                 ORDER BY offset_dec ASC
             """), {"ecu": "%" + ecu_name + "%"}).fetchall()
 
-            return [
-                {
+            result = []
+            for r in rows:
+                offset = r[4] or 0
+                # Normalize flash addresses: if offset > file_size, subtract base
+                if file_size > 0 and offset >= file_size:
+                    # Try common bases (0x80000000 for EDC17, 0x0 for raw)
+                    for base in [0x80000000, 0xA0000000, 0x00000000]:
+                        norm = offset - base
+                        if 0 <= norm < file_size:
+                            offset = norm
+                            break
+
+                result.append({
                     "id": r[0], "map_name": r[1], "category": r[2],
-                    "offset_hex": r[3], "offset_dec": r[4] or 0,
-                    "size_bytes": r[5] or 256, "unit": r[6],
-                    "ecu_model_name": r[7],
-                }
-                for r in rows
-            ]
+                    "offset_hex": r[3], "offset_dec": offset,
+                    "size_bytes": r[5] or 256,
+                    "ecu_model_name": r[6],
+                })
+            return result
         except Exception:
             return []
 

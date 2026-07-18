@@ -25,7 +25,7 @@ from app.ecu_engine.map_normalizer import MapNormalizer
 
 logger = logging.getLogger("routes.intelligence")
 
-router = APIRouter(prefix="/api", tags=["ECU Intelligence"])
+router = APIRouter(tags=["ECU Intelligence"])
 
 
 @router.post("/ecu/identify")
@@ -130,7 +130,7 @@ async def detect_maps_from_file(
             from sqlalchemy import text
             rows = db.execute(text("""
                 SELECT id, map_name, category, offset_hex, offset_dec,
-                       size_bytes, unit
+                       size_bytes
                 FROM known_maps
                 WHERE ecu_model_name LIKE :ecu
                 ORDER BY offset_dec ASC
@@ -140,7 +140,7 @@ async def detect_maps_from_file(
                 {
                     "id": r[0], "map_name": r[1], "category": r[2],
                     "offset_hex": r[3], "offset_dec": r[4] or 0,
-                    "size_bytes": r[5] or 256, "unit": r[6],
+                    "size_bytes": r[5] or 256,
                 }
                 for r in rows
             ]

@@ -31,19 +31,19 @@ logger = logging.getLogger("ecu_engine.ecu_matcher")
 ECU_SIGNATURES: Dict[str, dict] = {
     # Bosch EDC17 variants
     "Bosch EDC17CP14": {
-        "signatures": ["EDC17CP14", "EDC 17 CP14"],
+        "signatures": ["EDC17CP14", "EDC 17 CP14", "EDC17_CP14"],
         "vendor_id": "Bosch", "family": "EDC17",
         "processor": "Infineon TriCore TC1766",
         "flash_size": 2048, "description": "Diesel injection ECU for trucks/industrial",
     },
     "Bosch EDC17C46": {
-        "signatures": ["EDC17C46", "EDC 17 C46"],
+        "signatures": ["EDC17C46", "EDC 17 C46", "EDC17_C46"],
         "vendor_id": "Bosch", "family": "EDC17",
         "processor": "Infineon TriCore TC1766",
         "flash_size": 2048, "description": "Diesel ECU common in VAG vehicles",
     },
     "Bosch EDC17CP04": {
-        "signatures": ["EDC17CP04", "EDC 17 CP04"],
+        "signatures": ["EDC17CP04", "EDC 17 CP04", "EDC17_CP04"],
         "vendor_id": "Bosch", "family": "EDC17",
         "processor": "Infineon TriCore TC1796",
         "flash_size": 2048, "description": "Diesel ECU for BMW/VAG",
@@ -277,8 +277,11 @@ class ECUMatcher:
 
         best = candidates[0]
 
-        # Check DAMOS availability
+        # Check DAMOS availability and boost confidence
         damos_match = self._check_damos(best.model_name)
+        if damos_match:
+            best.confidence = min(0.95, best.confidence + 0.3)
+            best.match_method += "+damos_kb"
 
         return ECUIdentification(
             ecu_name=best.model_name,
@@ -294,17 +297,30 @@ class ECUMatcher:
     def _scan_signatures(self, data: bytes, filename: str) -> List[Tuple[str, float, str]]:
         """Scan binary for known ECU signatures."""
         results: List[Tuple[str, float, str]] = []
-        head = data[:8192].decode("latin-1", errors="ignore")
-        tail = data[-4096:].decode("latin-1", errors="ignore") if len(data) > 4096 else ""
+        head = data[:262144].decode("latin-1", errors="ignore")
+        tail = data[-8192:].decode("latin-1", errors="ignore") if len(data) > 8192 else ""
         full_text = head + " " + tail
 
         for model_name, info in ECU_SIGNATURES.items():
             hits = 0
+            fn_upper = filename.upper()
             for sig in info["signatures"]:
                 if sig.lower() in full_text.lower():
                     hits += 1
-                elif sig in filename.upper():
+                elif sig.upper() in fn_upper:
                     hits += 1
+                # Also check without spaces (e.g. "EDC17CP14" in "EDC17 CP14")
+                elif sig.replace(" ", "") in fn_upper.replace(" ", ""):
+                    hits += 1
+
+            # Filename keyword matching
+            fn_keywords = fn_upper.replace("-", " ").replace("_", " ")
+            if "EDC17" in fn_keywords and "EDC17" in model_name:
+                hits += 1
+            if "ME7" in fn_keywords and "ME7" in model_name:
+                hits += 1
+            if "MED17" in fn_keywords and "MED17" in model_name:
+                hits += 1
 
             if hits > 0:
                 confidence = min(0.95, 0.4 + hits * 0.2)
@@ -365,25 +381,16 @@ class ECUMatcher:
 
     def _match_db_fingerprint(self, data: bytes) -> Optional[str]:
         """Match against known ECU models in DB."""
-        sha256 = hashlib.sha256(data).hexdigest()
-        md5 = hashlib.md5(data).hexdigest()
-
         try:
-            row = self.session.execute(text("""
-                SELECT DISTINCT ecu_model_name FROM known_maps
-                WHERE SHA256 IS NOT NULL
-                LIMIT 5
-            """)).fetchall()
-            if row:
-                return None
+            self.session.rollback()
         except Exception:
-            return None
-
+            pass
         return None
 
     def _scan_known_strings(self, data: bytes) -> List[str]:
         """Scan for known strings in DB."""
         try:
+            self.session.rollback()
             rows = self.session.execute(text("""
                 SELECT DISTINCT string_content FROM known_strings
                 LIMIT 100
@@ -435,24 +442,40 @@ class ECUMatcher:
     def _check_damos(self, model_name: str) -> Optional[str]:
         """Check if DAMOS data is available for this ECU."""
         try:
+            # Ensure session is in a clean state
+            self.session.rollback()
+        except Exception:
+            pass
+        try:
+            # Try full name first
             row = self.session.execute(text("""
                 SELECT DISTINCT ecu_model_name FROM known_maps
                 WHERE ecu_model_name LIKE :pattern
                 LIMIT 1
             """), {"pattern": "%" + model_name + "%"}).fetchone()
-
             if row:
                 return row[0]
 
-            # Try matching by family keywords
-            family = model_name.split()[-1] if model_name else ""
-            row2 = self.session.execute(text("""
-                SELECT DISTINCT ecu_model_name FROM known_maps
-                WHERE ecu_model_name LIKE :pattern
-                LIMIT 1
-            """), {"pattern": "%" + family + "%"}).fetchone()
+            # Extract key part (e.g. "EDC17CP14" from "Bosch EDC17CP14")
+            key = model_name
+            for prefix in ["Bosch ", "Siemens ", "Continental ", "Delphi ", "Denso ", "Marelli ", "Valeo "]:
+                if key.startswith(prefix):
+                    key = key[len(prefix):]
 
-            return row2[0] if row2 else None
+            # Normalize: remove spaces, underscores for comparison
+            key_norm = key.replace(" ", "").replace("_", "").upper()
+
+            rows = self.session.execute(text("""
+                SELECT DISTINCT ecu_model_name FROM known_maps
+            """)).fetchall()
+
+            for r in rows:
+                db_name = r[0] or ""
+                db_norm = db_name.replace(" ", "").replace("_", "").upper()
+                if key_norm in db_norm or db_norm in key_norm:
+                    return db_name
+
+            return None
         except Exception:
             return None
 
