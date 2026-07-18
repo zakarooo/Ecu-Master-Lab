@@ -94,7 +94,7 @@ export default function ProjectDetailPage() {
     </div>
   );
 
-  const compatibleMods = analysis?.compatible_modifications || [];
+  const compatibleMods = (analysis?.compatible_modifications || []).map((m: string) => m.toLowerCase());
 
   return (
     <div className="flex min-h-screen bg-hero-gradient">
@@ -235,7 +235,8 @@ export default function ProjectDetailPage() {
                   <h4 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">{group.category}</h4>
                   <div className="flex flex-wrap gap-2">
                     {group.items.map((mod) => {
-                      const isCompatible = compatibleMods.includes(mod) || compatibleMods.some((cm: string) => cm.includes(mod.replace(" OFF", "")));
+                      const modLower = mod.toLowerCase().replace(/ /g, "");
+                      const isCompatible = compatibleMods.some((cm: string) => cm.replace(/ /g, "").includes(modLower.replace("off", "")) || modLower.includes(cm.replace(/ /g, "").replace("off", "")));
                       const isSelected = selectedMods.includes(mod);
                       return (
                         <button key={mod} onClick={() => isCompatible && toggleMod(mod)}

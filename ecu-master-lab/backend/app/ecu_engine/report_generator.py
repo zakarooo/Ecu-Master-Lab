@@ -184,8 +184,29 @@ def _hypotheses_to_dicts(cv: CrossValidationResult) -> List[Dict]:
 
 
 def _lookup_modifications(ecu_id: str) -> List[str]:
+    # Normalize ecu_id: strip prefixes like "REF_", "DB_", "BOSCH_"
+    normalized = ecu_id.upper().replace(" ", "_")
+    for prefix in ("REF_", "DB_"):
+        if normalized.startswith(prefix):
+            normalized = normalized[len(prefix):]
+    # Try exact match first
     for e in ECU_SIGNATURES_DB:
-        if e.get("ecu_id") == ecu_id:
+        if e.get("ecu_id", "").upper() == normalized:
+            return list(e.get("modifications", []))
+    # Fuzzy match: check if any signature ecu_model is contained in the normalized id
+    for e in ECU_SIGNATURES_DB:
+        model = e.get("ecu_model", "").upper().replace(" ", "")
+        if model and model in normalized:
+            return list(e.get("modifications", []))
+    # Reverse fuzzy: check if normalized id is contained in any signature ecu_model
+    for e in ECU_SIGNATURES_DB:
+        ecu_model_upper = e.get("ecu_model", "").upper().replace(" ", "")
+        if normalized and ecu_model_upper and normalized in ecu_model_upper:
+            return list(e.get("modifications", []))
+    # Match by ecu_family
+    for e in ECU_SIGNATURES_DB:
+        family = e.get("ecu_family", "").upper()
+        if family and family in normalized:
             return list(e.get("modifications", []))
     return []
 
