@@ -189,11 +189,11 @@ def upload_ecu_file(
                 ecu_model = engine_result.get("ecu_model", engine_result.get("file_name", "Unknown"))
                 extract_and_store(
                     db=db,
-                    raw_data=raw_data,
+                    data=raw_data,
+                    filename=ecu_file.filename or "unknown",
+                    file_path=ecu_file.file_path or "",
                     ecu_model_name=ecu_model,
-                    ecu_model_id=None,
-                    file_name=ecu_file.filename or "unknown",
-                    source_id=ecu_file.id,
+                    manufacturer_name=engine_result.get("manufacturer", ""),
                 )
                 db.commit()
             except Exception as exc:
@@ -322,11 +322,11 @@ def run_analysis(
             ecu_model = engine_result.get("ecu_model", engine_result.get("file_name", "Unknown"))
             extract_and_store(
                 db=db,
-                raw_data=raw_data,
+                data=raw_data,
+                filename=ecu_file.filename or "unknown",
+                file_path=ecu_file.file_path or "",
                 ecu_model_name=ecu_model,
-                ecu_model_id=None,
-                file_name=ecu_file.filename or "unknown",
-                source_id=ecu_file.id,
+                manufacturer_name=engine_result.get("manufacturer", ""),
             )
             db.commit()
         except Exception as exc:
