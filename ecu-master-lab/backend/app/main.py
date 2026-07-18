@@ -27,6 +27,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.error("PostgreSQL inaccessible: %s", db_status.get("error"))
     logger.info("CORS_ORIGINS: %s", settings.CORS_ORIGINS)
+
+    # Telegram startup notification
+    try:
+        from app.ecu_engine.telegram_notifier import notify_startup
+        notify_startup(settings.APP_NAME, settings.APP_VERSION)
+    except Exception:
+        pass
+
     yield
     engine.dispose()
 

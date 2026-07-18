@@ -161,6 +161,19 @@ async def api_write_map(req: WriteMapRequest):
     with open(output_path, "wb") as f:
         f.write(patched_data)
 
+    # Telegram notification: modification applied
+    try:
+        from app.ecu_engine.telegram_notifier import notify_modification_applied
+        cs_ok = (cs_result.checksums_valid_after or 0) >= (cs_result.checksums_valid_before or 0)
+        notify_modification_applied(
+            filename=os.path.basename(path),
+            mods=[req.offset and ("0x%X" % req.offset) or "map"],
+            checksum_ok=cs_ok,
+            user="api",
+        )
+    except Exception:
+        pass
+
     return WriteMapResponse(
         success=True,
         operations_count=len(wr.operations),

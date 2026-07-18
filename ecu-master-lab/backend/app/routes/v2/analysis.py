@@ -199,6 +199,22 @@ def upload_ecu_file(
             ecu_file_id=ecu_file.id, engine_result=engine_result
         )
 
+        # Telegram notification: analysis complete
+        try:
+            from app.ecu_engine.telegram_notifier import notify_analysis_complete
+            ecu_name = engine_result.get("ecu_type", engine_result.get("file_name", "Unknown"))
+            conf = engine_result.get("confidence", 0)
+            maps_n = len(engine_result.get("map_regions", []))
+            notify_analysis_complete(
+                filename=file.filename or "unknown",
+                ecu_model=ecu_name,
+                confidence=conf,
+                maps_found=maps_n,
+                user=str(current_user.id),
+            )
+        except Exception:
+            pass
+
         # Auto-populate knowledge base after successful analysis
         if analysis_result:
             try:
@@ -218,6 +234,17 @@ def upload_ecu_file(
                 logging.getLogger(__name__).warning(
                     "Knowledge extraction failed after analysis: %s", exc
                 )
+
+    # Telegram notification: file uploaded
+    try:
+        from app.ecu_engine.telegram_notifier import notify_upload
+        notify_upload(
+            filename=file.filename or "unknown",
+            file_size=file_size,
+            user=str(current_user.id),
+        )
+    except Exception:
+        pass
 
     return UploadResponse(ecu_file=ecu_file, analysis=analysis_result)
 
