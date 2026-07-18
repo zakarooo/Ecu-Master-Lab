@@ -211,6 +211,37 @@ class ECUEngine:
                     chk_list, list) else [],
                 xval, steps, elapsed))
 
+        # Layer 11 (optional): LLM enhancement via Mistral
+        llm_result = None
+        if isinstance(report, ECUReport):
+            try:
+                from .llm_enhancer import enhance_report
+                analysis_id = hashes.get("sha256", file_name)
+                llm_result = enhance_report(report, analysis_id)
+            except Exception as exc:
+                self.logger.info("LLM enhancement skipped: %s", exc)
+        else:
+            try:
+                from .llm_enhancer import enhance_report
+                analysis_id = hashes.get("sha256", file_name)
+                # For dict reports, create a lightweight shim
+                class _ReportShim:
+                    pass
+                shim = _ReportShim()
+                for k in ("file_name","file_size","file_type","file_entropy",
+                          "brand_guess","file_type_detailed","confidence",
+                          "processor_info","checksum_info","maps_summary",
+                          "db_match_info","referentiel_info","segments","anomalies",
+                          "knowledge_stats"):
+                    setattr(shim, k, report.get(k) if isinstance(report, dict) else None)
+                shim.file_name = report.get("file_name", file_name) if isinstance(report, dict) else file_name
+                shim.file_size = report.get("file_size", 0) if isinstance(report, dict) else 0
+                shim.file_type = report.get("file_type", "unknown") if isinstance(report, dict) else "unknown"
+                shim.file_entropy = report.get("file_entropy", 0.0) if isinstance(report, dict) else 0.0
+                llm_result = enhance_report(shim, analysis_id)
+            except Exception as exc:
+                self.logger.info("LLM enhancement skipped: %s", exc)
+
         # Finalize: attach metadata and serialize
         total_ms = sum(s.duration_ms for s in steps)
 
@@ -221,6 +252,8 @@ class ECUEngine:
             report.processing_time_seconds = elapsed
             report.total_pipeline_time_ms = total_ms
             serialized = self._serialize_report(report)
+            if llm_result:
+                serialized["llm_analysis"] = llm_result
             return _add_compat_keys(serialized, report)
 
         if isinstance(report, dict):
@@ -231,6 +264,8 @@ class ECUEngine:
             report["pipeline_steps"] = _to_jsonable(steps)
             report["processing_time_seconds"] = elapsed
             report["total_pipeline_time_ms"] = total_ms
+            if llm_result:
+                report["llm_analysis"] = llm_result
             return report
 
         return {

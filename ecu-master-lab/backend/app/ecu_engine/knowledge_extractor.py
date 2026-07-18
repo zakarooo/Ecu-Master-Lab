@@ -235,7 +235,7 @@ def extract_and_store(
     db.flush()
     source_id = known_file.id
 
-    stats = {"known_file_id": source_id, "signatures": 0, "strings": 0, "segments": 0}
+    stats = {"known_file_id": source_id, "signatures": 0, "strings": 0, "segments": 0, "checksums": 0, "maps": 0}
 
     # 2. Extract and store binary patterns
     patterns = _extract_unique_patterns(data)
@@ -309,9 +309,75 @@ def extract_and_store(
         db.add(kseg)
         stats["segments"] += 1
 
+    # 5. Extract and store checksums (using checksum_engine auto-detect)
+    try:
+        from app.ecu_engine.checksum_engine import auto_detect_checksum
+        checksum_results = auto_detect_checksum(data, ecu_model_name)
+        for cr in checksum_results:
+            if cr.algorithm:
+                existing_ck = db.query(KnownChecksum).filter(
+                    KnownChecksum.algorithm == cr.algorithm,
+                    KnownChecksum.ecu_model_name == ecu_model_name,
+                ).first()
+                if existing_ck:
+                    existing_ck.occurrence_count += 1
+                    existing_ck.total_known_files += 1
+                else:
+                    kchk = KnownChecksum(
+                        ecu_model_id=ecu_model_id,
+                        ecu_model_name=ecu_model_name,
+                        algorithm=cr.algorithm,
+                        offset=cr.offset,
+                        size=cr.size,
+                        data_range_start=cr.data_range[0] if cr.data_range else None,
+                        data_range_end=cr.data_range[1] if cr.data_range else None,
+                        occurrence_count=1,
+                        total_known_files=1,
+                        confidence=0.6 if cr.is_valid else 0.3,
+                        source_file_id=source_id,
+                    )
+                    db.add(kchk)
+                    stats["checksums"] += 1
+    except Exception as e:
+        log.warning("Checksum extraction failed: %s", e)
+
+    # 6. Extract and store detected maps (using map_detector)
+    try:
+        from app.ecu_engine.map_detector import detect_maps
+        map_result = detect_maps(data)
+        for dm in map_result.maps:
+            existing_map = db.query(KnownMap).filter(
+                KnownMap.ecu_model_name == ecu_model_name,
+                KnownMap.offset_dec == dm.offset,
+            ).first()
+            if existing_map:
+                existing_map.occurrence_count += 1
+                existing_map.total_known_files += 1
+            else:
+                kmap = KnownMap(
+                    ecu_model_id=ecu_model_id,
+                    ecu_model_name=ecu_model_name,
+                    map_name=dm.name or "Unknown",
+                    offset_hex=hex(dm.offset) if dm.offset else None,
+                    offset_dec=dm.offset,
+                    size_bytes=dm.size,
+                    rows=dm.rows,
+                    cols=dm.cols,
+                    data_type=str(dm.data_type.value) if dm.data_type else None,
+                    category=dm.category if hasattr(dm, 'category') else None,
+                    occurrence_count=1,
+                    total_known_files=1,
+                    confidence=dm.confidence if hasattr(dm, 'confidence') else 0.4,
+                    source_file_id=source_id,
+                )
+                db.add(kmap)
+                stats["maps"] += 1
+    except Exception as e:
+        log.warning("Map extraction failed: %s", e)
+
     db.commit()
     log.info(
-        "Knowledge extracted: %d signatures, %d strings, %d segments for %s",
-        stats["signatures"], stats["strings"], stats["segments"], ecu_model_name,
+        "Knowledge extracted: %d signatures, %d strings, %d segments, %d checksums, %d maps for %s",
+        stats["signatures"], stats["strings"], stats["segments"], stats["checksums"], stats["maps"], ecu_model_name,
     )
     return stats

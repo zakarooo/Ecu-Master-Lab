@@ -335,6 +335,103 @@ def _score_engine(
 #  VALIDATION CROISEE PRINCIPALE
 # ==============================================================
 
+def _query_ecu_models_from_db(db, tech_info, data_size, db_candidates):
+    """Query ecu_models + software_versions tables to build candidates
+    from the PostgreSQL referentiel (populated by seed_data.py)."""
+    try:
+        from app.models.new.ecu_models import (
+            ECUModel as _DBECUModel,
+            SoftwareVersion as _DBSWVersion,
+            Manufacturer as _DBMfr,
+        )
+        from sqlalchemy.orm import joinedload
+    except ImportError:
+        return
+
+    ecu_models = db.query(_DBECUModel).options(
+        joinedload(_DBECUModel.manufacturer)
+    ).all()
+
+    if not ecu_models:
+        return
+
+    hw_text = (tech_info.hw_number or "").lower() if tech_info else ""
+    sw_text = (tech_info.sw_number or "").lower() if tech_info else ""
+    brand_text = ""
+    engine_text = ""
+    if tech_info:
+        parts = list(tech_info.raw_strings.values()) if tech_info.raw_strings else []
+        parts.extend(tech_info.evidence or [])
+        brand_text = " ".join(p for p in parts if p).lower()
+        engine_text = (tech_info.engine_type or "").lower()
+
+    for model in ecu_models:
+        mfr_name = model.manufacturer.name if model.manufacturer else ""
+        model_name_lower = (model.model_name or "").lower()
+        family_lower = (model.family or "").lower()
+
+        score = 0.0
+        evidence = []
+
+        if model_name_lower and model_name_lower in hw_text:
+            score += 30.0
+            evidence.append("HW match model: %s" % model.model_name)
+        if family_lower and family_lower in hw_text:
+            score += 20.0
+            evidence.append("Family match HW: %s" % model.family)
+        if mfr_name.lower() and mfr_name.lower() in brand_text:
+            score += 15.0
+            evidence.append("Manufacturer found in strings: %s" % mfr_name)
+
+        typical_brands = (model.typical_brands or "").lower()
+        if typical_brands:
+            for tb in typical_brands.split(","):
+                tb = tb.strip()
+                if tb and tb in brand_text:
+                    score += 10.0
+                    evidence.append("Typical brand match: %s" % tb)
+                    break
+
+        typical_engines = (model.typical_engines or "").lower()
+        if typical_engines:
+            for te in typical_engines.split(","):
+                te = te.strip()
+                if te and te in engine_text:
+                    score += 10.0
+                    evidence.append("Typical engine match: %s" % te)
+                    break
+
+        sw_versions = db.query(_DBSWVersion).filter(
+            _DBSWVersion.ecu_model_id == model.id
+        ).all()
+        for sv in sw_versions:
+            if sv.sw_number and sv.sw_number.lower() in sw_text:
+                score += 25.0
+                evidence.append("SW version match: %s" % sv.sw_number)
+                break
+            if sv.hw_number and sv.hw_number.lower() in hw_text:
+                score += 20.0
+                evidence.append("HW version match: %s" % sv.hw_number)
+                break
+
+        if score < 5.0:
+            continue
+
+        cand = ECUCandidate(
+            ecu_id="REF_%s" % model.model_name.replace(" ", "_"),
+            manufacturer=mfr_name,
+            ecu_family=model.family or "",
+            ecu_model=model.model_name,
+            confidence=min(score, 99.0),
+            evidence=evidence,
+            match_scores={"referentiel_score": score},
+        )
+        db_candidates.append(cand)
+
+    logger.info("Layer 9: Referentiel DB added %d candidates",
+                sum(1 for c in db_candidates if c.ecu_id.startswith("REF_")))
+
+
 def cross_validate(
     data: bytes,
     format_result: FormatResult,
@@ -379,6 +476,22 @@ def cross_validate(
             logger.info("Layer 9: DB matcher a retourne %d candidats", len(db_candidates))
         except Exception as exc:
             logger.warning("Layer 9: DB matcher failed: %s", exc)
+            try:
+                db.rollback()
+            except Exception:
+                pass
+
+    # --- Phase 3b : DB referentiel matching (ecu_models + software_versions) ---
+    if db is not None:
+        try:
+            from app.models.new.ecu_models import (
+                ECUModel as _DBECUModel,
+                SoftwareVersion as _DBSWVersion,
+                Manufacturer as _DBMfr,
+            )
+            _query_ecu_models_from_db(db, tech_info, data_size, db_candidates)
+        except Exception as exc:
+            logger.warning("Layer 9: DB referentiel query failed: %s", exc)
             try:
                 db.rollback()
             except Exception:

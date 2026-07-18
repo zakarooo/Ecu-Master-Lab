@@ -182,6 +182,26 @@ def upload_ecu_file(
             ecu_file_id=ecu_file.id, engine_result=engine_result
         )
 
+        # Auto-populate knowledge base after successful analysis
+        if analysis_result:
+            try:
+                from app.ecu_engine.knowledge_extractor import extract_and_store
+                ecu_model = engine_result.get("ecu_model", engine_result.get("file_name", "Unknown"))
+                extract_and_store(
+                    db=db,
+                    raw_data=raw_data,
+                    ecu_model_name=ecu_model,
+                    ecu_model_id=None,
+                    file_name=ecu_file.filename or "unknown",
+                    source_id=ecu_file.id,
+                )
+                db.commit()
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).warning(
+                    "Knowledge extraction failed after analysis: %s", exc
+                )
+
     return UploadResponse(ecu_file=ecu_file, analysis=analysis_result)
 
 
@@ -293,6 +313,27 @@ def run_analysis(
     created = svc_analysis.save_analysis(
         ecu_file_id=ecu_file_id, engine_result=engine_result
     )
+
+    # Auto-populate knowledge base after successful analysis
+    if created:
+        try:
+            from app.ecu_engine.knowledge_extractor import extract_and_store
+            ecu_model = engine_result.get("ecu_model", engine_result.get("file_name", "Unknown"))
+            extract_and_store(
+                db=db,
+                raw_data=raw_data,
+                ecu_model_name=ecu_model,
+                ecu_model_id=None,
+                file_name=ecu_file.filename or "unknown",
+                source_id=ecu_file.id,
+            )
+            db.commit()
+        except Exception as exc:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Knowledge extraction failed after analysis: %s", exc
+            )
+
     return created
 
 

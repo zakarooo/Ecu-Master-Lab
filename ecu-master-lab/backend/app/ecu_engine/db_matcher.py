@@ -192,3 +192,96 @@ def match_from_db(
     )
 
     return results[:10]
+
+
+def match_referentiel(db: Session, data: bytes) -> List[Dict[str, Any]]:
+    """
+    Match against the referentiel tables (ecu_models + software_versions).
+    Used as fallback when knowledge tables are empty.
+    Returns candidates scored against referentiel data.
+    """
+    candidates: Dict[str, Dict[str, Any]] = {}
+
+    def _ensure(name, manufacturer=""):
+        if name not in candidates:
+            candidates[name] = {
+                "ecu_model_name": name,
+                "manufacturer_name": manufacturer,
+                "score": 0.0,
+                "evidence": [],
+                "match_details": {"referentiel_score": 0, "total_known_files": 0},
+            }
+
+    try:
+        from app.models.new.ecu_models import (
+            ECUModel as _DBECUModel,
+            SoftwareVersion as _DBSWVersion,
+            Manufacturer as _DBMfr,
+        )
+        from sqlalchemy.orm import joinedload
+    except ImportError:
+        return []
+
+    ecu_models = db.query(_DBECUModel).options(
+        joinedload(_DBECUModel.manufacturer)
+    ).all()
+
+    if not ecu_models:
+        return []
+
+    # Extract strings from binary for matching
+    strings = []
+    current = []
+    for byte in data:
+        if 32 <= byte < 127:
+            current.append(chr(byte))
+        else:
+            if len(current) >= 6:
+                strings.append("".join(current).strip())
+            current = []
+    if len(current) >= 6:
+        strings.append("".join(current).strip())
+    text_blob = " ".join(strings).lower()
+
+    for model in ecu_models:
+        mfr_name = model.manufacturer.name if model.manufacturer else ""
+        model_lower = (model.model_name or "").lower()
+        family_lower = (model.family or "").lower()
+
+        score = 0.0
+        evidence = []
+
+        if model_lower and model_lower in text_blob:
+            score += 30
+            evidence.append("Model name found in strings: %s" % model.model_name)
+
+        if family_lower and family_lower in text_blob:
+            score += 20
+            evidence.append("Family found in strings: %s" % model.family)
+
+        typical_brands = (model.typical_brands or "").lower()
+        if typical_brands:
+            for tb in typical_brands.split(","):
+                tb = tb.strip()
+                if tb and tb in text_blob:
+                    score += 10
+                    evidence.append("Typical brand match: %s" % tb)
+                    break
+
+        if score < 5:
+            continue
+
+        name = model.model_name
+        _ensure(name, mfr_name)
+        candidates[name]["score"] = score
+        candidates[name]["evidence"] = evidence
+        candidates[name]["match_details"]["referentiel_score"] = score
+
+    results = list(candidates.values())
+    if results:
+        max_s = max(c["score"] for c in results)
+        if max_s > 0:
+            for c in results:
+                c["score"] = min(c["score"] / max_s * 100, 99.9)
+    results.sort(key=lambda c: c["score"], reverse=True)
+    return results[:10]
