@@ -1,0 +1,15 @@
+.git
+node_modules
+ecu-master-lab/frontend/node_modules
+ecu-master-lab/frontend/.next
+ecu-master-lab/backend/__pycache__
+ecu-master-lab/backend/app/__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+bahia residence/
+droitsejour/
+juridoc/
+stratconsult-dashboard/
+audit.py
+audit_report.json
