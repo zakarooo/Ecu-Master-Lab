@@ -77,7 +77,15 @@ app.include_router(v2_router)
 
 @app.get("/")
 def root():
-    return RedirectResponse(url="/api/health")
+    db_status = check_db_connection()
+    return {
+        "status": "healthy",
+        "app": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "database": db_status["status"],
+        "docs": "/docs" if settings.DEBUG else None,
+        "health": "/api/health",
+    }
 
 
 @app.get("/api/health")
