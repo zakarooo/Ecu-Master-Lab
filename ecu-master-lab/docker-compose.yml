@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecu-master-lab-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecu_master_lab
+      POSTGRES_USER: ecu_user
+      POSTGRES_PASSWORD: ecu_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecu_user -d ecu_master_lab"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

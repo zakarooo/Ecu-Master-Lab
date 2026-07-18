@@ -1,0 +1,505 @@
+[DIR ] backend
+[FILE] backend\.env
+[DIR ] backend\alembic
+[FILE] backend\alembic\env.py
+[FILE] backend\alembic\script.py.mako
+[DIR ] backend\alembic\versions
+[FILE] backend\alembic\versions\a1b2c3d4e5f6_v2_add_34_ecu_tables.py
+[FILE] backend\alembic\versions\b1c2d3e4f5a6_add_composite_indexes.py
+[FILE] backend\alembic\versions\d29b7a1d6cf3_init_ecu_master_lab.py
+[FILE] backend\alembic.ini
+[DIR ] backend\app
+[FILE] backend\app\__init__.py
+[DIR ] backend\app\agents
+[FILE] backend\app\agents\ecu_ai_engine.py
+[FILE] backend\app\agents\ecu_signatures.py
+[DIR ] backend\app\core
+[FILE] backend\app\core\config.py
+[FILE] backend\app\core\database.py
+[FILE] backend\app\core\deps.py
+[FILE] backend\app\core\security.py
+[DIR ] backend\app\ecu_engine
+[FILE] backend\app\ecu_engine\__init__.py
+[FILE] backend\app\ecu_engine\checksum_engine.py
+[DIR ] backend\app\ecu_engine\checksums
+[FILE] backend\app\ecu_engine\cross_validator.py
+[FILE] backend\app\ecu_engine\engine.py
+[FILE] backend\app\ecu_engine\format_detector.py
+[FILE] backend\app\ecu_engine\info_extractor.py
+[FILE] backend\app\ecu_engine\map_detector.py
+[FILE] backend\app\ecu_engine\memory_identifier.py
+[FILE] backend\app\ecu_engine\models.py
+[FILE] backend\app\ecu_engine\processor_identifier.py
+[DIR ] backend\app\ecu_engine\processors
+[FILE] backend\app\ecu_engine\report_generator.py
+[FILE] backend\app\ecu_engine\scoring.py
+[FILE] backend\app\ecu_engine\segment_analyzer.py
+[FILE] backend\app\ecu_engine\signature_scanner.py
+[DIR ] backend\app\ecu_engine\signatures
+[FILE] backend\app\ecu_engine\utils.py
+[FILE] backend\app\main.py
+[DIR ] backend\app\models
+[FILE] backend\app\models\__init__.py
+[FILE] backend\app\models\models.py
+[DIR ] backend\app\models\new
+[FILE] backend\app\models\new\ecu_models.py
+[FILE] backend\app\models\schemas.py
+[DIR ] backend\app\repositories
+[FILE] backend\app\repositories\__init__.py
+[FILE] backend\app\repositories\audit_log_repository.py
+[FILE] backend\app\repositories\file_version_repository.py
+[FILE] backend\app\repositories\project_repository.py
+[FILE] backend\app\repositories\user_repository.py
+[DIR ] backend\app\repositories\v2
+[FILE] backend\app\repositories\v2\ecu_repositories.py
+[DIR ] backend\app\routes
+[FILE] backend\app\routes\__init__.py
+[FILE] backend\app\routes\admin.py
+[FILE] backend\app\routes\auth.py
+[FILE] backend\app\routes\projects.py
+[DIR ] backend\app\routes\v2
+[FILE] backend\app\routes\v2\__init__.py
+[FILE] backend\app\routes\v2\activity.py
+[FILE] backend\app\routes\v2\ai.py
+[FILE] backend\app\routes\v2\analysis.py
+[FILE] backend\app\routes\v2\maps.py
+[FILE] backend\app\routes\v2\memory.py
+[FILE] backend\app\routes\v2\pagination.py
+[FILE] backend\app\routes\v2\referentiel.py
+[FILE] backend\app\routes\v2\reports.py
+[FILE] backend\app\routes\v2\signatures.py
+[FILE] backend\app\routes\v2\vehicles.py
+[FILE] backend\app\routes\v2\versions.py
+[DIR ] backend\app\schemas
+[FILE] backend\app\schemas\__init__.py
+[FILE] backend\app\schemas\ecu_schemas.py
+[DIR ] backend\app\services
+[FILE] backend\app\services\__init__.py
+[FILE] backend\app\services\file_service.py
+[DIR ] backend\app\services\v2
+[FILE] backend\app\services\v2\__init__.py
+[FILE] backend\app\services\v2\ecu_services.py
+[FILE] backend\requirements.txt
+[FILE] backend\seed_data.py
+[DIR ] backend\tests
+[DIR ] backend\uploads
+[FILE] backend.log
+[FILE] docker-compose.yml
+[FILE] ecumaster_audit.py
+[DIR ] frontend
+[DIR ] frontend\.next
+[FILE] frontend\.next\app-build-manifest.json
+[FILE] frontend\.next\build-manifest.json
+[DIR ] frontend\.next\cache
+[FILE] frontend\.next\cache\.tsbuildinfo
+[DIR ] frontend\.next\cache\swc
+[DIR ] frontend\.next\cache\swc\plugins
+[DIR ] frontend\.next\cache\swc\plugins\v7_windows_x86_64_0.104.41
+[DIR ] frontend\.next\cache\webpack
+[DIR ] frontend\.next\cache\webpack\client-development
+[FILE] frontend\.next\cache\webpack\client-development\0.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\1.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\10.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\11.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\12.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\13.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\14.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\15.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\16.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\17.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\18.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\19.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\2.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\20.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\21.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\3.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\4.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\5.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\6.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\7.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\8.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\9.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\index.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development\index.pack.gz.old
+[DIR ] frontend\.next\cache\webpack\client-development-fallback
+[FILE] frontend\.next\cache\webpack\client-development-fallback\0.pack.gz
+[FILE] frontend\.next\cache\webpack\client-development-fallback\index.pack.gz
+[DIR ] frontend\.next\cache\webpack\client-production
+[FILE] frontend\.next\cache\webpack\client-production\0.pack
+[FILE] frontend\.next\cache\webpack\client-production\1.pack
+[FILE] frontend\.next\cache\webpack\client-production\2.pack
+[FILE] frontend\.next\cache\webpack\client-production\index.pack
+[FILE] frontend\.next\cache\webpack\client-production\index.pack.old
+[DIR ] frontend\.next\cache\webpack\server-development
+[FILE] frontend\.next\cache\webpack\server-development\0.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\1.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\10.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\11.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\12.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\13.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\14.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\2.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\3.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\4.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\5.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\6.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\7.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\8.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\9.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\index.pack.gz
+[FILE] frontend\.next\cache\webpack\server-development\index.pack.gz.old
+[DIR ] frontend\.next\cache\webpack\server-production
+[FILE] frontend\.next\cache\webpack\server-production\0.pack
+[FILE] frontend\.next\cache\webpack\server-production\index.pack
+[FILE] frontend\.next\package.json
+[FILE] frontend\.next\react-loadable-manifest.json
+[DIR ] frontend\.next\server
+[DIR ] frontend\.next\server\app
+[DIR ] frontend\.next\server\app\(auth)
+[DIR ] frontend\.next\server\app\(auth)\login
+[FILE] frontend\.next\server\app\(auth)\login\page.js
+[FILE] frontend\.next\server\app\(auth)\login\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(auth)\register
+[FILE] frontend\.next\server\app\(auth)\register\page.js
+[FILE] frontend\.next\server\app\(auth)\register\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(dashboard)
+[DIR ] frontend\.next\server\app\(dashboard)\admin
+[FILE] frontend\.next\server\app\(dashboard)\admin\page.js
+[FILE] frontend\.next\server\app\(dashboard)\admin\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(dashboard)\analysis
+[DIR ] frontend\.next\server\app\(dashboard)\analysis\[id]
+[FILE] frontend\.next\server\app\(dashboard)\analysis\[id]\page.js
+[FILE] frontend\.next\server\app\(dashboard)\analysis\[id]\page_client-reference-manifest.js
+[FILE] frontend\.next\server\app\(dashboard)\analysis\page.js
+[FILE] frontend\.next\server\app\(dashboard)\analysis\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(dashboard)\analysis\upload
+[FILE] frontend\.next\server\app\(dashboard)\analysis\upload\page.js
+[FILE] frontend\.next\server\app\(dashboard)\analysis\upload\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(dashboard)\dashboard
+[FILE] frontend\.next\server\app\(dashboard)\dashboard\page.js
+[FILE] frontend\.next\server\app\(dashboard)\dashboard\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(dashboard)\projects
+[DIR ] frontend\.next\server\app\(dashboard)\projects\[id]
+[FILE] frontend\.next\server\app\(dashboard)\projects\[id]\page.js
+[FILE] frontend\.next\server\app\(dashboard)\projects\[id]\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(dashboard)\projects\new
+[FILE] frontend\.next\server\app\(dashboard)\projects\new\page.js
+[FILE] frontend\.next\server\app\(dashboard)\projects\new\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(dashboard)\reference
+[DIR ] frontend\.next\server\app\(dashboard)\reference\manufacturers
+[FILE] frontend\.next\server\app\(dashboard)\reference\manufacturers\page.js
+[FILE] frontend\.next\server\app\(dashboard)\reference\manufacturers\page_client-reference-manifest.js
+[FILE] frontend\.next\server\app\(dashboard)\reference\page.js
+[FILE] frontend\.next\server\app\(dashboard)\reference\page_client-reference-manifest.js
+[DIR ] frontend\.next\server\app\(dashboard)\reference\processors
+[FILE] frontend\.next\server\app\(dashboard)\reference\processors\page.js
+[FILE] frontend\.next\server\app\(dashboard)\reference\processors\page_client-reference-manifest.js
+[FILE] frontend\.next\server\app\page.js
+[FILE] frontend\.next\server\app\page_client-reference-manifest.js
+[FILE] frontend\.next\server\app-paths-manifest.json
+[FILE] frontend\.next\server\middleware-build-manifest.js
+[FILE] frontend\.next\server\middleware-manifest.json
+[FILE] frontend\.next\server\middleware-react-loadable-manifest.js
+[FILE] frontend\.next\server\next-font-manifest.js
+[FILE] frontend\.next\server\next-font-manifest.json
+[FILE] frontend\.next\server\pages-manifest.json
+[FILE] frontend\.next\server\server-reference-manifest.js
+[FILE] frontend\.next\server\server-reference-manifest.json
+[DIR ] frontend\.next\server\vendor-chunks
+[FILE] frontend\.next\server\vendor-chunks\@swc.js
+[FILE] frontend\.next\server\vendor-chunks\clsx.js
+[FILE] frontend\.next\server\vendor-chunks\lucide-react.js
+[FILE] frontend\.next\server\vendor-chunks\next.js
+[FILE] frontend\.next\server\vendor-chunks\tailwind-merge.js
+[FILE] frontend\.next\server\webpack-runtime.js
+[DIR ] frontend\.next\static
+[DIR ] frontend\.next\static\chunks
+[DIR ] frontend\.next\static\chunks\app
+[DIR ] frontend\.next\static\chunks\app\(auth)
+[DIR ] frontend\.next\static\chunks\app\(auth)\login
+[FILE] frontend\.next\static\chunks\app\(auth)\login\page.js
+[DIR ] frontend\.next\static\chunks\app\(auth)\register
+[FILE] frontend\.next\static\chunks\app\(auth)\register\page.js
+[DIR ] frontend\.next\static\chunks\app\(dashboard)
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\admin
+[FILE] frontend\.next\static\chunks\app\(dashboard)\admin\page.js
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\analysis
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\analysis\[id]
+[FILE] frontend\.next\static\chunks\app\(dashboard)\analysis\[id]\page.js
+[FILE] frontend\.next\static\chunks\app\(dashboard)\analysis\page.js
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\analysis\upload
+[FILE] frontend\.next\static\chunks\app\(dashboard)\analysis\upload\page.js
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\dashboard
+[FILE] frontend\.next\static\chunks\app\(dashboard)\dashboard\page.js
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\projects
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\projects\[id]
+[FILE] frontend\.next\static\chunks\app\(dashboard)\projects\[id]\page.js
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\projects\new
+[FILE] frontend\.next\static\chunks\app\(dashboard)\projects\new\page.js
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\reference
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\reference\manufacturers
+[FILE] frontend\.next\static\chunks\app\(dashboard)\reference\manufacturers\page.js
+[FILE] frontend\.next\static\chunks\app\(dashboard)\reference\page.js
+[DIR ] frontend\.next\static\chunks\app\(dashboard)\reference\processors
+[FILE] frontend\.next\static\chunks\app\(dashboard)\reference\processors\page.js
+[FILE] frontend\.next\static\chunks\app\layout.js
+[FILE] frontend\.next\static\chunks\app\page.js
+[FILE] frontend\.next\static\chunks\app-pages-internals.js
+[FILE] frontend\.next\static\chunks\main-app.js
+[FILE] frontend\.next\static\chunks\polyfills.js
+[FILE] frontend\.next\static\chunks\webpack.js
+[DIR ] frontend\.next\static\css
+[DIR ] frontend\.next\static\css\app
+[FILE] frontend\.next\static\css\app\layout.css
+[DIR ] frontend\.next\static\development
+[FILE] frontend\.next\static\development\_buildManifest.js
+[FILE] frontend\.next\static\development\_ssgManifest.js
+[DIR ] frontend\.next\static\webpack
+[FILE] frontend\.next\static\webpack\08ebfcf6dcb29c94.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\0dda15257b7f5ae1.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\115b9d2c84db16e0.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\277bfb1dbb7f8432.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\2b4d87756d48d681.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\4b5c2f67df646048.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\5f305e04977d4e3c.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\633457081244afec._.hot-update.json
+[FILE] frontend\.next\static\webpack\697b710f130be7a3.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\9e0f773d7c0435a8.webpack.hot-update.json
+[DIR ] frontend\.next\static\webpack\app
+[DIR ] frontend\.next\static\webpack\app\(dashboard)
+[DIR ] frontend\.next\static\webpack\app\(dashboard)\analysis
+[DIR ] frontend\.next\static\webpack\app\(dashboard)\analysis\upload
+[FILE] frontend\.next\static\webpack\app\(dashboard)\analysis\upload\page.0dda15257b7f5ae1.hot-update.js
+[FILE] frontend\.next\static\webpack\app\(dashboard)\analysis\upload\page.115b9d2c84db16e0.hot-update.js
+[FILE] frontend\.next\static\webpack\app\(dashboard)\analysis\upload\page.2b4d87756d48d681.hot-update.js
+[FILE] frontend\.next\static\webpack\app\layout.0dda15257b7f5ae1.hot-update.js
+[FILE] frontend\.next\static\webpack\app\layout.115b9d2c84db16e0.hot-update.js
+[FILE] frontend\.next\static\webpack\app\layout.2b4d87756d48d681.hot-update.js
+[FILE] frontend\.next\static\webpack\app\layout.b84add696d8fb2f2.hot-update.js
+[FILE] frontend\.next\static\webpack\b467c9b41506face.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\b84add696d8fb2f2.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\de1a4e37b31c9715.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\e79b594ff15ce83a.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\eab9009216614096.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\f264416550da5b99.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\ff61e931ce9583d1.webpack.hot-update.json
+[FILE] frontend\.next\static\webpack\webpack.08ebfcf6dcb29c94.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.0dda15257b7f5ae1.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.115b9d2c84db16e0.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.277bfb1dbb7f8432.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.2b4d87756d48d681.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.4b5c2f67df646048.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.5f305e04977d4e3c.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.697b710f130be7a3.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.9e0f773d7c0435a8.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.b467c9b41506face.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.b84add696d8fb2f2.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.de1a4e37b31c9715.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.e79b594ff15ce83a.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.eab9009216614096.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.f264416550da5b99.hot-update.js
+[FILE] frontend\.next\static\webpack\webpack.ff61e931ce9583d1.hot-update.js
+[FILE] frontend\.next\trace
+[DIR ] frontend\.next\types
+[DIR ] frontend\.next\types\app
+[DIR ] frontend\.next\types\app\(auth)
+[DIR ] frontend\.next\types\app\(auth)\login
+[FILE] frontend\.next\types\app\(auth)\login\page.ts
+[DIR ] frontend\.next\types\app\(auth)\register
+[FILE] frontend\.next\types\app\(auth)\register\page.ts
+[DIR ] frontend\.next\types\app\(dashboard)
+[DIR ] frontend\.next\types\app\(dashboard)\admin
+[FILE] frontend\.next\types\app\(dashboard)\admin\page.ts
+[DIR ] frontend\.next\types\app\(dashboard)\analysis
+[DIR ] frontend\.next\types\app\(dashboard)\analysis\[id]
+[FILE] frontend\.next\types\app\(dashboard)\analysis\[id]\page.ts
+[FILE] frontend\.next\types\app\(dashboard)\analysis\page.ts
+[DIR ] frontend\.next\types\app\(dashboard)\analysis\upload
+[FILE] frontend\.next\types\app\(dashboard)\analysis\upload\page.ts
+[DIR ] frontend\.next\types\app\(dashboard)\dashboard
+[FILE] frontend\.next\types\app\(dashboard)\dashboard\page.ts
+[DIR ] frontend\.next\types\app\(dashboard)\projects
+[DIR ] frontend\.next\types\app\(dashboard)\projects\[id]
+[FILE] frontend\.next\types\app\(dashboard)\projects\[id]\page.ts
+[DIR ] frontend\.next\types\app\(dashboard)\projects\new
+[FILE] frontend\.next\types\app\(dashboard)\projects\new\page.ts
+[DIR ] frontend\.next\types\app\(dashboard)\reference
+[DIR ] frontend\.next\types\app\(dashboard)\reference\manufacturers
+[FILE] frontend\.next\types\app\(dashboard)\reference\manufacturers\page.ts
+[FILE] frontend\.next\types\app\(dashboard)\reference\page.ts
+[DIR ] frontend\.next\types\app\(dashboard)\reference\processors
+[FILE] frontend\.next\types\app\(dashboard)\reference\processors\page.ts
+[FILE] frontend\.next\types\app\layout.ts
+[FILE] frontend\.next\types\app\page.ts
+[FILE] frontend\.next\types\package.json
+[FILE] frontend\next-env.d.ts
+[FILE] frontend\next.config.js
+[FILE] frontend\package-lock.json
+[FILE] frontend\package.json
+[FILE] frontend\postcss.config.js
+[DIR ] frontend\public
+[DIR ] frontend\src
+[DIR ] frontend\src\app
+[DIR ] frontend\src\app\(auth)
+[DIR ] frontend\src\app\(auth)\login
+[FILE] frontend\src\app\(auth)\login\page.tsx
+[DIR ] frontend\src\app\(auth)\register
+[FILE] frontend\src\app\(auth)\register\page.tsx
+[DIR ] frontend\src\app\(dashboard)
+[DIR ] frontend\src\app\(dashboard)\admin
+[FILE] frontend\src\app\(dashboard)\admin\page.tsx
+[DIR ] frontend\src\app\(dashboard)\analysis
+[DIR ] frontend\src\app\(dashboard)\analysis\[id]
+[FILE] frontend\src\app\(dashboard)\analysis\[id]\page.tsx
+[FILE] frontend\src\app\(dashboard)\analysis\page.tsx
+[DIR ] frontend\src\app\(dashboard)\analysis\upload
+[FILE] frontend\src\app\(dashboard)\analysis\upload\page.tsx
+[DIR ] frontend\src\app\(dashboard)\dashboard
+[FILE] frontend\src\app\(dashboard)\dashboard\page.tsx
+[DIR ] frontend\src\app\(dashboard)\projects
+[DIR ] frontend\src\app\(dashboard)\projects\[id]
+[FILE] frontend\src\app\(dashboard)\projects\[id]\page.tsx
+[DIR ] frontend\src\app\(dashboard)\projects\new
+[FILE] frontend\src\app\(dashboard)\projects\new\page.tsx
+[DIR ] frontend\src\app\(dashboard)\reference
+[DIR ] frontend\src\app\(dashboard)\reference\ecu-models
+[FILE] frontend\src\app\(dashboard)\reference\ecu-models\page.tsx
+[DIR ] frontend\src\app\(dashboard)\reference\manufacturers
+[FILE] frontend\src\app\(dashboard)\reference\manufacturers\page.tsx
+[FILE] frontend\src\app\(dashboard)\reference\page.tsx
+[DIR ] frontend\src\app\(dashboard)\reference\processors
+[FILE] frontend\src\app\(dashboard)\reference\processors\page.tsx
+[DIR ] frontend\src\app\(dashboard)\reference\signatures
+[FILE] frontend\src\app\(dashboard)\reference\signatures\page.tsx
+[FILE] frontend\src\app\globals.css
+[FILE] frontend\src\app\layout.tsx
+[FILE] frontend\src\app\page.tsx
+[DIR ] frontend\src\components
+[DIR ] frontend\src\components\layout
+[FILE] frontend\src\components\layout\Footer.tsx
+[FILE] frontend\src\components\layout\Navbar.tsx
+[FILE] frontend\src\components\layout\Sidebar.tsx
+[DIR ] frontend\src\components\ui
+[DIR ] frontend\src\hooks
+[DIR ] frontend\src\lib
+[FILE] frontend\src\lib\api.ts
+[FILE] frontend\src\lib\utils.ts
+[FILE] frontend\tailwind.config.ts
+[FILE] frontend\tsconfig.json
+[FILE] frontend.log
+[FILE] init.sql
+[FILE] start-backend.bat
+[FILE] start-frontend.bat
+[FILE] START.bat
+[FILE] test_engine.py
+[FILE] test_engine_v2.py
+[DIR ] uploads
+[DIR ] uploads\10
+[DIR ] uploads\10\original
+[FILE] uploads\10\original\ALFA__DPF__EGR.bin
+[FILE] uploads\10\original_backup_afa5eed0.bin
+[DIR ] uploads\10\versions
+[FILE] uploads\10\versions\version_1.bin
+[DIR ] uploads\12
+[FILE] uploads\12\modified_BK.MPC
+[DIR ] uploads\12\original
+[FILE] uploads\12\original\BK.MPC
+[FILE] uploads\12\original_backup_403f9442.bin
+[DIR ] uploads\12\versions
+[FILE] uploads\12\versions\version_1.MPC
+[FILE] uploads\12\versions\version_2.MPC
+[DIR ] uploads\13
+[FILE] uploads\13\modified_BK.MPC
+[DIR ] uploads\13\original
+[FILE] uploads\13\original\BK.MPC
+[FILE] uploads\13\original_backup_403f9442.bin
+[DIR ] uploads\13\versions
+[FILE] uploads\13\versions\version_1.MPC
+[FILE] uploads\13\versions\version_2.MPC
+[DIR ] uploads\14
+[FILE] uploads\14\modified_BK.MPC
+[DIR ] uploads\14\original
+[FILE] uploads\14\original\BK.MPC
+[FILE] uploads\14\original_backup_403f9442.bin
+[DIR ] uploads\14\versions
+[FILE] uploads\14\versions\version_1.MPC
+[FILE] uploads\14\versions\version_2.MPC
+[DIR ] uploads\15
+[FILE] uploads\15\modified_BK.MPC
+[DIR ] uploads\15\original
+[FILE] uploads\15\original\BK.MPC
+[FILE] uploads\15\original_backup_403f9442.bin
+[DIR ] uploads\15\versions
+[FILE] uploads\15\versions\version_1.MPC
+[FILE] uploads\15\versions\version_2.MPC
+[DIR ] uploads\2
+[FILE] uploads\2\modified_bousch edc 16c34 C4.BIN
+[DIR ] uploads\2\original
+[FILE] uploads\2\original\bousch edc 16c34 C4.BIN
+[FILE] uploads\2\original_backup_090bd855.bin
+[DIR ] uploads\2\versions
+[FILE] uploads\2\versions\version_1.BIN
+[FILE] uploads\2\versions\version_2.BIN
+[DIR ] uploads\3
+[FILE] uploads\3\modified_MagicSolution_PSA DCM6.2_DPF ADBLUE EGR_NOCHEKCSUM247020.bin
+[DIR ] uploads\3\original
+[FILE] uploads\3\original\MagicSolution_PSA DCM6.2_DPF ADBLUE EGR_NOCHEKCSUM247020.bin
+[FILE] uploads\3\original_backup_2a334679.bin
+[DIR ] uploads\3\versions
+[FILE] uploads\3\versions\version_1.bin
+[FILE] uploads\3\versions\version_2.bin
+[DIR ] uploads\4
+[FILE] uploads\4\modified_BAK.MPC
+[DIR ] uploads\4\original
+[FILE] uploads\4\original\BAK.MPC
+[FILE] uploads\4\original_backup_d92f4cdf.bin
+[DIR ] uploads\4\versions
+[FILE] uploads\4\versions\version_1.MPC
+[FILE] uploads\4\versions\version_2.MPC
+[DIR ] uploads\5
+[FILE] uploads\5\modified_bousch edc 16c34 C4.BIN
+[DIR ] uploads\5\original
+[FILE] uploads\5\original\bousch edc 16c34 C4.BIN
+[FILE] uploads\5\original_backup_090bd855.bin
+[DIR ] uploads\5\versions
+[FILE] uploads\5\versions\version_1.BIN
+[FILE] uploads\5\versions\version_2.BIN
+[DIR ] uploads\6
+[DIR ] uploads\6\original
+[FILE] uploads\6\original\BK.MPC
+[FILE] uploads\6\original_backup_403f9442.bin
+[DIR ] uploads\6\versions
+[FILE] uploads\6\versions\version_1.MPC
+[DIR ] uploads\7
+[FILE] uploads\7\modified_BK.MPC
+[DIR ] uploads\7\original
+[FILE] uploads\7\original\BK.MPC
+[FILE] uploads\7\original_backup_403f9442.bin
+[DIR ] uploads\7\versions
+[FILE] uploads\7\versions\version_1.MPC
+[FILE] uploads\7\versions\version_2.MPC
+[DIR ] uploads\8
+[FILE] uploads\8\modified_ALFA__DPF__EGR.bin
+[DIR ] uploads\8\original
+[FILE] uploads\8\original\ALFA__DPF__EGR.bin
+[FILE] uploads\8\original_backup_afa5eed0.bin
+[DIR ] uploads\8\versions
+[FILE] uploads\8\versions\version_1.bin
+[FILE] uploads\8\versions\version_2.bin
+[DIR ] uploads\9
+[FILE] uploads\9\modified_ALFA__DPF__EGR.bin
+[DIR ] uploads\9\original
+[FILE] uploads\9\original\ALFA__DPF__EGR.bin
+[FILE] uploads\9\original_backup_afa5eed0.bin
+[DIR ] uploads\9\versions
+[FILE] uploads\9\versions\version_1.bin
+[FILE] uploads\9\versions\version_2.bin
+[DIR ] uploads\ecu_files
+[FILE] uploads\ecu_files\0ad3326ea992_BK2.MPC
+[FILE] uploads\ecu_files\610e46717b5d_MagicSolution_PSA EDC17C60_ADBLUE_NOCHEKCSUM107492.bin
+[FILE] uploads\ecu_files\b01069d43f6d_immo off.bin
+[FILE] uploads\ecu_files\c2b77d8727f8_BK.MPC
+[FILE] uploads\ecu_files\ce8735fd48ef_BK.MPC
+[FILE] uploads\ecu_files\dfa9c9e3d2fd_MD1CS003 ORI LAST
+[FILE] uploads\ecu_files\e57b3bf9938a_BK3.MPC
+[FILE] uploads\ecu_files\e798fe199d8c_test_ECU.BIN

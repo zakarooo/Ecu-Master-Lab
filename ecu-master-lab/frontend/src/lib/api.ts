@@ -1,0 +1,117 @@
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+
+async function request(path: string, options: RequestInit = {}) {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string> || {}),
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    throw new Error("Non autorisé");
+  }
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: "Erreur serveur" }));
+    throw new Error(error.detail || "Erreur serveur");
+  }
+
+  return res.json();
+}
+
+export const api = {
+  request,
+  auth: {
+    register: (data: any) => request("/api/auth/register", { method: "POST", body: JSON.stringify(data) }),
+    login: (data: any) => request("/api/auth/login", { method: "POST", body: JSON.stringify(data) }),
+    me: () => request("/api/auth/me"),
+  },
+  projects: {
+    list: () => request("/api/projects"),
+    get: (id: number) => request(`/api/projects/${id}`),
+    create: (data: any) => request("/api/projects", { method: "POST", body: JSON.stringify(data) }),
+    upload: (id: number, file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      return request(`/api/projects/${id}/upload`, { method: "POST", body: form });
+    },
+    setModifications: (id: number, data: any) =>
+      request(`/api/projects/${id}/modifications`, { method: "POST", body: JSON.stringify(data) }),
+    process: (id: number) => request(`/api/projects/${id}/process`, { method: "POST" }),
+    versions: (id: number) => request(`/api/projects/${id}/versions`),
+  },
+  admin: {
+    stats: () => request("/api/admin/stats"),
+    users: () => request("/api/admin/users"),
+    projects: () => request("/api/admin/projects"),
+    updateUser: (id: number, data: any) => request(`/api/admin/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    auditLogs: () => request("/api/admin/audit-logs"),
+  },
+  v2: {
+    manufacturers: {
+      list: (params?: string) => request(`/api/v2/referentiel/manufacturers${params ? `?${params}` : ""}`),
+      get: (id: number) => request(`/api/v2/referentiel/manufacturers/${id}`),
+      create: (data: any) => request("/api/v2/referentiel/manufacturers", { method: "POST", body: JSON.stringify(data) }),
+    },
+    ecuModels: {
+      list: (params?: string) => request(`/api/v2/referentiel/ecu-models${params ? `?${params}` : ""}`),
+      get: (id: number) => request(`/api/v2/referentiel/ecu-models/${id}`),
+    },
+    processors: {
+      list: (params?: string) => request(`/api/v2/referentiel/processors${params ? `?${params}` : ""}`),
+      get: (id: number) => request(`/api/v2/referentiel/processors/${id}`),
+    },
+    protocols: {
+      list: (params?: string) => request(`/api/v2/referentiel/protocols${params ? `?${params}` : ""}`),
+      get: (id: number) => request(`/api/v2/referentiel/protocols/${id}`),
+    },
+    ecuFiles: {
+      list: (params?: string) => request(`/api/v2/analysis/ecu-files${params ? `?${params}` : ""}`),
+      get: (id: number) => request(`/api/v2/analysis/ecu-files/${id}`),
+    },
+    analyses: {
+      list: (params?: string) => request(`/api/v2/analysis/analyses${params ? `?${params}` : ""}`),
+      get: (id: number) => request(`/api/v2/analysis/analyses/${id}`),
+      run: (fileId: number) => request(`/api/v2/analysis/analyses/${fileId}/run`, { method: "POST" }),
+    },
+    upload: (file: File, runAnalysis: boolean = false) => {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("run_analysis", String(runAnalysis));
+      return request("/api/v2/analysis/upload", { method: "POST", body: form });
+    },
+    vehicleBrands: {
+      list: (params?: string) => request(`/api/v2/vehicles/vehicle-brands${params ? `?${params}` : ""}`),
+    },
+    vehicleModels: {
+      list: (params?: string) => request(`/api/v2/vehicles/vehicle-models${params ? `?${params}` : ""}`),
+    },
+    memoryLayouts: {
+      list: (params?: string) => request(`/api/v2/memory/memory-layouts${params ? `?${params}` : ""}`),
+    },
+    ecuSignatures: {
+      list: (params?: string) => request(`/api/v2/signatures/ecu-signatures${params ? `?${params}` : ""}`),
+    },
+    mapCategories: {
+      list: (params?: string) => request(`/api/v2/maps/map-categories${params ? `?${params}` : ""}`),
+    },
+    mapUnits: {
+      list: (params?: string) => request(`/api/v2/maps/map-units${params ? `?${params}` : ""}`),
+    },
+    maps: {
+      list: (params?: string) => request(`/api/v2/maps/maps${params ? `?${params}` : ""}`),
+    },
+  },
+};

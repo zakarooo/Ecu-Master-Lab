@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+env/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Upload ECU
+uploads/
+
+# Alembic
+alembic/versions/*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# Node
+node_modules/
+.next/
+frontend/.next/
+
+# Build
+dist/
+build/
+
+# Tests
+.pytest_cache/
+.coverage
+coverage/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Archives
+*.tar
+*.zip

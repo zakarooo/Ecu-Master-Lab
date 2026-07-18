@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ecu-blue: #0066FF;
+  --ecu-dark: #0A0E1A;
+  --ecu-darker: #050810;
+}
+
+body {
+  background: var(--ecu-darker);
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.glass {
+  background: rgba(15, 20, 40, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 102, 255, 0.15);
+}
+
+.glass-strong {
+  background: rgba(15, 20, 40, 0.85);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(0, 102, 255, 0.25);
+}
+
+.glow-border {
+  box-shadow: 0 0 15px rgba(0, 102, 255, 0.2), inset 0 0 15px rgba(0, 102, 255, 0.05);
+}
+
+.glow-text {
+  text-shadow: 0 0 20px rgba(0, 102, 255, 0.5);
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold px-6 py-3 rounded-xl 
+         hover:from-blue-500 hover:to-blue-400 transition-all duration-300 
+         shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 active:scale-95;
+}
+
+.btn-secondary {
+  @apply glass text-blue-400 font-semibold px-6 py-3 rounded-xl 
+         hover:bg-blue-500/10 transition-all duration-300 
+         border border-blue-500/20 hover:border-blue-500/40;
+}
+
+.input-field {
+  @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white 
+         placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.08] 
+         transition-all duration-300;
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/10;
+}
+
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent;
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.scan-line {
+  animation: scan-line 8s linear infinite;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 14, 26, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 102, 255, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 102, 255, 0.5);
+}
