@@ -25,6 +25,7 @@ async def lifespan(app: FastAPI):
         logger.info("Tables trouvées (%d): %s", len(tables), ", ".join(tables))
     else:
         logger.error("PostgreSQL inaccessible: %s", db_status.get("error"))
+    logger.info("CORS_ORIGINS: %s", settings.CORS_ORIGINS)
     yield
     engine.dispose()
 

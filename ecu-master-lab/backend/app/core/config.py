@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     REDIS_URL: str = ""
 
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "https://frontend-fog8mm9kk-basrhicham-9750s-projects.vercel.app", "https://frontend-beige-rho-83.vercel.app"]
 
     PORT: int = 8000
 
