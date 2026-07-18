@@ -4,6 +4,7 @@ from typing import List
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from app.core.config import settings
 from app.core.database import engine, Base, check_db_connection, list_tables
@@ -64,6 +65,11 @@ app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(admin.router)
 app.include_router(v2_router)
+
+
+@app.get("/")
+def root():
+    return RedirectResponse(url="/api/health")
 
 
 @app.get("/api/health")
