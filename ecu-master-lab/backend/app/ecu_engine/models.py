@@ -260,6 +260,7 @@ class DetectedMap:
     status: str = "active"
     detection_method: str = ""
     explanation: str = ""
+    damos_map_id: int = 0
 
 
 @dataclass

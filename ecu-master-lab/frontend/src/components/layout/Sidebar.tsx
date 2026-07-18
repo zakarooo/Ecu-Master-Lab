@@ -11,6 +11,7 @@ import {
   ScanLine,
   Upload,
   Database,
+  Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,12 @@ const sections: NavSection[] = [
     title: "Référence",
     items: [
       { href: "/reference", label: "Données Référence", icon: Database },
+    ],
+  },
+  {
+    title: "Intelligence",
+    items: [
+      { href: "/intelligence", label: "ECU Intelligence", icon: Brain },
     ],
   },
 ];

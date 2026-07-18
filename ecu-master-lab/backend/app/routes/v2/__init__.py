@@ -13,6 +13,7 @@ from app.routes.v2.ai import router as ai_router
 from app.routes.v2.reports import router as reports_router
 from app.routes.v2.activity import router as activity_router
 from app.routes.v2.knowledge import router as knowledge_router
+from app.routes.v2.intelligence import router as intelligence_router
 
 v2_router = APIRouter(prefix="/api", tags=["V2 - ECU Master Lab"])
 v2_router.include_router(referentiel_router)
@@ -26,3 +27,4 @@ v2_router.include_router(ai_router)
 v2_router.include_router(reports_router)
 v2_router.include_router(activity_router)
 v2_router.include_router(knowledge_router)
+v2_router.include_router(intelligence_router)
