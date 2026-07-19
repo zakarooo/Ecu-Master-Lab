@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
+from typing import Optional
 from app.core.database import get_db
 from app.core.security import get_password_hash, verify_password, create_access_token, validate_password_strength
 from app.core.deps import get_current_user
@@ -154,3 +155,54 @@ def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
     user.password_reset_expires = None
     db.commit()
     return {"message": "Mot de passe réinitialisé avec succès"}
+
+
+class UpdateProfileRequest(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+
+
+@router.put("/profile", response_model=UserResponse)
+def update_profile(data: UpdateProfileRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if data.email and data.email != current_user.email:
+        existing = db.query(User).filter(User.email == data.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+        current_user.email = data.email
+        current_user.is_email_verified = False
+        current_user.email_verification_token = secrets.token_urlsafe(32)
+    if data.first_name is not None:
+        current_user.first_name = data.first_name
+    if data.last_name is not None:
+        current_user.last_name = data.last_name
+    if data.phone is not None:
+        current_user.phone = data.phone
+
+    log = AuditLog(user_id=current_user.id, action="UPDATE_PROFILE", resource_type="user", resource_id=current_user.id)
+    db.add(log)
+    db.commit()
+    db.refresh(current_user)
+    return UserResponse.model_validate(current_user)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.put("/password")
+def change_password(data: ChangePasswordRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not verify_password(data.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Mot de passe actuel incorrect")
+    try:
+        validate_password_strength(data.new_password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    current_user.hashed_password = get_password_hash(data.new_password)
+
+    log = AuditLog(user_id=current_user.id, action="CHANGE_PASSWORD", resource_type="user", resource_id=current_user.id)
+    db.add(log)
+    db.commit()
+    return {"message": "Mot de passe modifié avec succès"}

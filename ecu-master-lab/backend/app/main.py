@@ -11,6 +11,7 @@ from app.core.database import engine, Base, check_db_connection, list_tables
 from app.core.security import decode_access_token
 from app.routes import auth, projects, admin, expert
 from app.routes.v2 import v2_router
+from app.routes.v3 import v3_router
 
 import json
 
@@ -75,6 +76,7 @@ app.include_router(projects.router)
 app.include_router(admin.router)
 app.include_router(expert.router)
 app.include_router(v2_router)
+app.include_router(v3_router)
 
 
 @app.get("/")

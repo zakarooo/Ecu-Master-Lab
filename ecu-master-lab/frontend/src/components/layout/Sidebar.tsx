@@ -12,6 +12,7 @@ import {
   LogOut,
   Database,
   Brain,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -70,6 +71,12 @@ export default function Sidebar() {
       title: "Intelligence",
       items: [
         { href: "/intelligence", label: "ECU Intelligence", icon: Brain },
+      ],
+    },
+    {
+      title: "Compte",
+      items: [
+        { href: "/profile", label: "Mon Profil", icon: User },
       ],
     },
   ];

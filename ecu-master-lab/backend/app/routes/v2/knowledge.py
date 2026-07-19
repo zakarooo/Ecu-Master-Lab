@@ -117,16 +117,8 @@ def get_knowledge_stats(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return KnowledgeStats(
-        total_known_files=db.query(func.count(KnownEcuFile.id)).scalar() or 0,
-        total_signatures=db.query(func.count(KnownSignature.id)).scalar() or 0,
-        total_strings=db.query(func.count(KnownString.id)).scalar() or 0,
-        total_maps=db.query(func.count(KnownMap.id)).scalar() or 0,
-        total_checksums=db.query(func.count(KnownChecksum.id)).scalar() or 0,
-        total_segments=db.query(func.count(KnownSegment.id)).scalar() or 0,
-        total_corrections=db.query(func.count(AnalysisCorrection.id)).scalar() or 0,
-        ecu_models_covered=db.query(func.count(func.distinct(KnownEcuFile.ecu_model_name))).scalar() or 0,
-    )
+    from app.routes.v2.intelligence import get_statistics
+    return get_statistics(db=db, current_user=current_user)
 
 
 @router.post("/register", response_model=RegisterKnownFileResponse, status_code=201)
