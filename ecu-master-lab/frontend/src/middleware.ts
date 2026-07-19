@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const protectedRoutes = ["/dashboard", "/projects", "/admin", "/expert", "/reference", "/intelligence", "/analysis"];
+const protectedRoutes = ["/dashboard", "/projects", "/admin", "/expert", "/reference", "/intelligence", "/analysis", "/profile"];
 const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email"];
 
 export function middleware(request: NextRequest) {
@@ -25,5 +25,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/projects/:path*", "/admin/:path*", "/expert/:path*", "/reference/:path*", "/intelligence/:path*", "/analysis/:path*", "/login", "/register", "/forgot-password", "/reset-password", "/verify-email"],
+  matcher: ["/dashboard/:path*", "/projects/:path*", "/admin/:path*", "/expert/:path*", "/reference/:path*", "/intelligence/:path*", "/analysis/:path*", "/profile/:path*", "/login", "/register", "/forgot-password", "/reset-password", "/verify-email"],
 };

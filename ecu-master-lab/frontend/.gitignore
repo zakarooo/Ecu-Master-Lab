@@ -1,0 +1,4 @@
+.vercel
+e2e/.auth/
+test-results/
+test-results*/
