@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import get_current_user
 from app.ecu_engine.ecu_analyst import ECUAnalystAgent
 from app.ecu_engine.ecu_matcher import ECUMatcher
 from app.ecu_engine.semantic_search import SemanticSearchEngine
@@ -32,6 +33,7 @@ router = APIRouter(tags=["ECU Intelligence"])
 async def identify_ecu(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
     """Identify ECU from uploaded binary file."""
     try:
@@ -83,6 +85,7 @@ async def analyze_ecu(
     use_llm: bool = Query(False, description="Use LLM for insights"),
     run_quality: bool = Query(False, description="Run quality report"),
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
     """Full ECU analysis with all KB layers."""
     try:
@@ -116,6 +119,7 @@ async def detect_maps_from_file(
     file: UploadFile = File(...),
     ecu_name: Optional[str] = Query(None, description="ECU name for DAMOS lookup"),
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
     """Detect maps with optional DAMOS metadata."""
     try:
@@ -206,6 +210,7 @@ async def search_knowledge(
     category: Optional[str] = Query(None, description="Filter by category"),
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
     """Search knowledge base maps."""
     try:
@@ -225,7 +230,10 @@ async def search_knowledge(
 
 
 @router.get("/knowledge/statistics")
-async def get_statistics(db: Session = Depends(get_db)):
+async def get_statistics(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     """Get knowledge base statistics."""
     try:
         engine = SemanticSearchEngine(db)
@@ -240,6 +248,7 @@ async def get_statistics(db: Session = Depends(get_db)):
 async def compute_embeddings(
     batch_size: int = Query(500, ge=10, le=2000),
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
     """Compute vector embeddings for maps (requires pgvector)."""
     try:
@@ -253,7 +262,10 @@ async def compute_embeddings(
 
 
 @router.get("/knowledge/quality")
-async def get_quality_report(db: Session = Depends(get_db)):
+async def get_quality_report(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     """Get data quality report."""
     try:
         report = generate_quality_report(db)
@@ -264,7 +276,10 @@ async def get_quality_report(db: Session = Depends(get_db)):
 
 
 @router.get("/ecu/list")
-async def list_ecus(db: Session = Depends(get_db)):
+async def list_ecus(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     """List all known ECU models with map counts."""
     try:
         matcher = ECUMatcher(db)
@@ -276,7 +291,11 @@ async def list_ecus(db: Session = Depends(get_db)):
 
 
 @router.get("/ecu/{ecu_name}/coverage")
-async def get_ecu_coverage(ecu_name: str, db: Session = Depends(get_db)):
+async def get_ecu_coverage(
+    ecu_name: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     """Get map coverage for a specific ECU."""
     try:
         matcher = ECUMatcher(db)

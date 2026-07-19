@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.deps import get_current_user
+from app.models.models import User
 from app.models.new.ecu_models import (
     Analysis,
     AnalysisHypothesis,
@@ -259,9 +260,9 @@ def list_files(
     limit: int = Query(50, ge=1, le=200),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    q = db.query(ECUFile)
+    q = db.query(ECUFile).filter(ECUFile.uploaded_by == current_user.id)
     if search:
         q = q.filter(ECUFile.filename.ilike(f"%{search}%"))
     items, total = paginate_query(q.order_by(ECUFile.id.desc()), skip, limit)
@@ -272,11 +273,13 @@ def list_files(
 def get_file(
     file_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     svc = ECUFileService(db)
     f = svc.get_by_id(file_id)
     if not f:
+        raise HTTPException(404, "ECU file not found")
+    if f.uploaded_by != current_user.id:
         raise HTTPException(404, "ECU file not found")
     return f
 
@@ -291,9 +294,10 @@ def list_analyses(
     limit: int = Query(50, ge=1, le=200),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    q = db.query(Analysis)
+    user_file_ids = [f.id for f in db.query(ECUFile.id).filter(ECUFile.uploaded_by == current_user.id)]
+    q = db.query(Analysis).filter(Analysis.ecu_file_id.in_(user_file_ids))
     if search:
         q = q.filter(Analysis.detected_ecu_model.ilike(f"%{search}%"))
     items, total = paginate_query(q.order_by(Analysis.id.desc()), skip, limit)
@@ -304,11 +308,14 @@ def list_analyses(
 def get_analysis(
     analysis_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     svc = AnalysisService(db)
     a = svc.get_by_id(analysis_id)
     if not a:
+        raise HTTPException(404, "Analysis not found")
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == a.ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
         raise HTTPException(404, "Analysis not found")
     return a
 
@@ -319,8 +326,11 @@ def list_analyses_by_file(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
+        raise HTTPException(404, "ECU file not found")
     q = db.query(Analysis).filter(Analysis.ecu_file_id == ecu_file_id)
     items, total = paginate_query(q.order_by(Analysis.id.desc()), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
@@ -338,11 +348,13 @@ def list_analyses_by_file(
 def run_analysis(
     ecu_file_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     svc_file = ECUFileService(db)
     ecu_file = svc_file.get_by_id(ecu_file_id)
     if not ecu_file:
+        raise HTTPException(404, "ECU file not found")
+    if ecu_file.uploaded_by != current_user.id:
         raise HTTPException(404, "ECU file not found")
 
     file_path = str(Path(ecu_file.file_path).resolve())
@@ -390,9 +402,15 @@ def run_analysis(
 def get_full_analysis(
     analysis_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     svc = AnalysisService(db)
+    a = svc.get_by_id(analysis_id)
+    if not a:
+        raise HTTPException(404, "Analysis not found")
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == a.ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
+        raise HTTPException(404, "Analysis not found")
     return _build_full_analysis(svc, analysis_id)
 
 
@@ -409,8 +427,14 @@ def list_analysis_results(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    a = db.query(Analysis).filter(Analysis.id == analysis_id).first()
+    if not a:
+        raise HTTPException(404, "Analysis not found")
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == a.ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
+        raise HTTPException(404, "Analysis not found")
     q = db.query(AnalysisResult).filter(AnalysisResult.analysis_id == analysis_id)
     items, total = paginate_query(q.order_by(AnalysisResult.id), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
@@ -425,8 +449,14 @@ def list_analysis_hypotheses(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    a = db.query(Analysis).filter(Analysis.id == analysis_id).first()
+    if not a:
+        raise HTTPException(404, "Analysis not found")
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == a.ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
+        raise HTTPException(404, "Analysis not found")
     q = db.query(AnalysisHypothesis).filter(AnalysisHypothesis.analysis_id == analysis_id)
     items, total = paginate_query(q.order_by(AnalysisHypothesis.rank), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
@@ -441,8 +471,14 @@ def list_analysis_scores(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    a = db.query(Analysis).filter(Analysis.id == analysis_id).first()
+    if not a:
+        raise HTTPException(404, "Analysis not found")
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == a.ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
+        raise HTTPException(404, "Analysis not found")
     q = db.query(AnalysisScore).filter(AnalysisScore.analysis_id == analysis_id)
     items, total = paginate_query(q.order_by(AnalysisScore.id), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
@@ -457,8 +493,14 @@ def list_detected_maps(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    a = db.query(Analysis).filter(Analysis.id == analysis_id).first()
+    if not a:
+        raise HTTPException(404, "Analysis not found")
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == a.ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
+        raise HTTPException(404, "Analysis not found")
     q = db.query(DetectedMap).filter(DetectedMap.analysis_id == analysis_id)
     items, total = paginate_query(q.order_by(DetectedMap.id), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
@@ -473,8 +515,14 @@ def list_detected_segments(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    a = db.query(Analysis).filter(Analysis.id == analysis_id).first()
+    if not a:
+        raise HTTPException(404, "Analysis not found")
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == a.ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
+        raise HTTPException(404, "Analysis not found")
     q = db.query(DetectedSegment).filter(DetectedSegment.analysis_id == analysis_id)
     items, total = paginate_query(q.order_by(DetectedSegment.id), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
@@ -489,8 +537,14 @@ def list_checksum_results(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    a = db.query(Analysis).filter(Analysis.id == analysis_id).first()
+    if not a:
+        raise HTTPException(404, "Analysis not found")
+    ecu_file = db.query(ECUFile).filter(ECUFile.id == a.ecu_file_id).first()
+    if not ecu_file or ecu_file.uploaded_by != current_user.id:
+        raise HTTPException(404, "Analysis not found")
     q = db.query(ChecksumResult).filter(ChecksumResult.analysis_id == analysis_id)
     items, total = paginate_query(q.order_by(ChecksumResult.id), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)

@@ -59,7 +59,7 @@ const refCards: RefCard[] = [
   {
     title: "Protocoles",
     icon: Radio,
-    href: "/reference",
+    href: "/reference/protocols",
     color: "text-purple-400",
     borderColor: "border-purple-500/20",
     description: "Protocoles de communication",
@@ -77,7 +77,7 @@ const refCards: RefCard[] = [
   {
     title: "Mémoires",
     icon: HardDrive,
-    href: "/reference",
+    href: "/reference/memoryLayouts",
     color: "text-orange-400",
     borderColor: "border-orange-500/20",
     description: "Layouts mémoire des ECU",
@@ -86,7 +86,7 @@ const refCards: RefCard[] = [
   {
     title: "Cartes",
     icon: Map,
-    href: "/reference",
+    href: "/reference/maps",
     color: "text-pink-400",
     borderColor: "border-pink-500/20",
     description: "Cartes de calibration détectées",
@@ -95,7 +95,7 @@ const refCards: RefCard[] = [
   {
     title: "Catégories de cartes",
     icon: Tag,
-    href: "/reference",
+    href: "/reference/mapCategories",
     color: "text-red-400",
     borderColor: "border-red-500/20",
     description: "Catégories et types de cartes",
@@ -104,7 +104,7 @@ const refCards: RefCard[] = [
   {
     title: "Unités",
     icon: Ruler,
-    href: "/reference",
+    href: "/reference/mapUnits",
     color: "text-teal-400",
     borderColor: "border-teal-500/20",
     description: "Unités de mesure pour cartes",
@@ -113,7 +113,7 @@ const refCards: RefCard[] = [
   {
     title: "Marques véhicules",
     icon: Car,
-    href: "/reference",
+    href: "/reference/vehicleBrands",
     color: "text-indigo-400",
     borderColor: "border-indigo-500/20",
     description: "Marques et modèles véhicules",

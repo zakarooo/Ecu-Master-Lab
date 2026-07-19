@@ -24,6 +24,7 @@ export default function RegisterPage() {
       const res = await api.auth.register(form);
       localStorage.setItem("token", res.access_token);
       localStorage.setItem("user", JSON.stringify(res.user));
+      document.cookie = `session=${res.access_token}; path=/; max-age=86400; SameSite=Lax`;
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "Erreur lors de l'inscription");

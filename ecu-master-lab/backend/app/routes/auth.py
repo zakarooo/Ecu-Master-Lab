@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.security import get_password_hash, verify_password, create_access_token
+from app.core.security import get_password_hash, verify_password, create_access_token, validate_password_strength
 from app.core.deps import get_current_user
+from app.core.config import settings
 from app.models.models import User, UserRole, AuditLog
 from app.models.schemas import UserCreate, UserLogin, UserResponse, TokenResponse
 
@@ -10,6 +12,7 @@ router = APIRouter(prefix="/api/auth", tags=["Authentification"])
 
 from datetime import datetime, timedelta
 from sqlalchemy import func
+import secrets
 
 _MAX_ATTEMPTS = 5
 _LOCKOUT_SECONDS = 300
@@ -52,6 +55,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Un compte avec cet email existe déjà")
 
+    verification_token = secrets.token_urlsafe(32)
+
     user = User(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
@@ -59,6 +64,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
         phone=user_data.phone,
         hashed_password=get_password_hash(user_data.password),
         role=UserRole.CLIENT,
+        is_email_verified=False,
+        email_verification_token=verification_token,
     )
     db.add(user)
     db.commit()
@@ -93,3 +100,57 @@ def login(credentials: UserLogin, request: Request, db: Session = Depends(get_db
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     return UserResponse.model_validate(current_user)
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+
+@router.post("/verify-email")
+def verify_email(data: VerifyEmailRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email_verification_token == data.token).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Token de vérification invalide")
+    user.is_email_verified = True
+    user.email_verification_token = None
+    db.commit()
+    return {"message": "Email vérifié avec succès"}
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+@router.post("/forgot-password")
+def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user:
+        return {"message": "Si cet email existe, un lien de réinitialisation a été envoyé"}
+    reset_token = secrets.token_urlsafe(32)
+    user.password_reset_token = reset_token
+    user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)
+    db.commit()
+    return {"message": "Si cet email existe, un lien de réinitialisation a été envoyé", "token": reset_token}
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.password_reset_token == data.token).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Token invalide")
+    if user.password_reset_expires and user.password_reset_expires < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Token expiré")
+    try:
+        validate_password_strength(data.new_password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    user.hashed_password = get_password_hash(data.new_password)
+    user.password_reset_token = None
+    user.password_reset_expires = None
+    db.commit()
+    return {"message": "Mot de passe réinitialisé avec succès"}

@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   Cpu,
   LayoutDashboard,
   FolderPlus,
   Shield,
+  ShieldCheck,
   LogOut,
-  ScanLine,
-  Upload,
   Database,
   Brain,
 } from "lucide-react";
@@ -26,42 +26,58 @@ interface NavSection {
   items: NavItem[];
 }
 
-const sections: NavSection[] = [
-  {
-    title: "Navigation",
-    items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/projects/new", label: "Nouveau Projet", icon: FolderPlus },
-      { href: "/admin", label: "Administration", icon: Shield },
-    ],
-  },
-  {
-    title: "Analyse",
-    items: [
-      { href: "/analysis", label: "Analyse ECU", icon: ScanLine },
-      { href: "/analysis/upload", label: "Upload Fichier", icon: Upload },
-    ],
-  },
-  {
-    title: "Référence",
-    items: [
-      { href: "/reference", label: "Données Référence", icon: Database },
-    ],
-  },
-  {
-    title: "Intelligence",
-    items: [
-      { href: "/intelligence", label: "ECU Intelligence", icon: Brain },
-    ],
-  },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
+  const [userRole, setUserRole] = useState<string>("client");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        const u = JSON.parse(raw);
+        if (u.role) setUserRole(u.role);
+      }
+    } catch {}
+  }, []);
+
+  const sections: NavSection[] = [
+    {
+      title: "Navigation",
+      items: [
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/projects/new", label: "Nouveau Projet", icon: FolderPlus },
+      ],
+    },
+    ...(userRole === "expert" || userRole === "admin" ? [{
+      title: "Expert",
+      items: [
+        { href: "/expert", label: "Revues Expert", icon: ShieldCheck },
+      ],
+    }] : []),
+    ...(userRole === "admin" ? [{
+      title: "Administration",
+      items: [
+        { href: "/admin", label: "Administration", icon: Shield },
+      ],
+    }] : []),
+    {
+      title: "Référence",
+      items: [
+        { href: "/reference", label: "Données Référence", icon: Database },
+      ],
+    },
+    {
+      title: "Intelligence",
+      items: [
+        { href: "/intelligence", label: "ECU Intelligence", icon: Brain },
+      ],
+    },
+  ];
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    document.cookie = "session=; path=/; max-age=0";
     window.location.href = "/";
   };
 

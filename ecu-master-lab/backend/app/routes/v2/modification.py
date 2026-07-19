@@ -13,12 +13,15 @@ import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.config import settings
+from app.core.deps import get_current_user
 from app.ecu_engine.map_value_reader import read_map, read_curve, read_single_value
 from app.ecu_engine.map_value_writer import write_map, write_curve, write_single_value
 from app.ecu_engine.checksum_recalc import recalculate_checksums, get_checksum_info
@@ -100,8 +103,11 @@ class ChecksumResponse(BaseModel):
 # ── Helper ──────────────────────────────────────────────────────
 
 def _resolve_path(file_path: str) -> str:
-    """Resolve file path to absolute."""
+    """Resolve file path — must be within UPLOAD_DIR or a project subdirectory."""
+    upload_root = str(Path(settings.UPLOAD_DIR).resolve())
     p = os.path.abspath(file_path)
+    if not p.startswith(upload_root):
+        raise HTTPException(status_code=403, detail="Access denied: path outside uploads directory")
     if not os.path.isfile(p):
         raise HTTPException(status_code=404, detail="File not found: " + file_path)
     return p
@@ -110,7 +116,7 @@ def _resolve_path(file_path: str) -> str:
 # ── Routes ──────────────────────────────────────────────────────
 
 @router.post("/read-map", response_model=ReadMapResponse)
-async def api_read_map(req: ReadMapRequest):
+async def api_read_map(req: ReadMapRequest, current_user=Depends(get_current_user)):
     """Read a 2D calibration map from a binary file."""
     path = _resolve_path(req.file_path)
     with open(path, "rb") as f:
@@ -135,7 +141,7 @@ async def api_read_map(req: ReadMapRequest):
 
 
 @router.post("/write-map", response_model=WriteMapResponse)
-async def api_write_map(req: WriteMapRequest):
+async def api_write_map(req: WriteMapRequest, current_user=Depends(get_current_user)):
     """Write modified map values to a new file with checksum recalculation."""
     path = _resolve_path(req.file_path)
     with open(path, "rb") as f:
@@ -190,7 +196,7 @@ async def api_write_map(req: WriteMapRequest):
 
 
 @router.post("/read-value")
-async def api_read_value(req: ReadMapRequest):
+async def api_read_value(req: ReadMapRequest, current_user=Depends(get_current_user)):
     """Read a single value from a binary file at a specific offset."""
     path = _resolve_path(req.file_path)
     with open(path, "rb") as f:
@@ -207,7 +213,7 @@ async def api_read_value(req: ReadMapRequest):
 
 
 @router.post("/convert", response_model=ConvertResponse)
-async def api_convert(req: ConvertRequest):
+async def api_convert(req: ConvertRequest, current_user=Depends(get_current_user)):
     """Convert between raw ECU values and physical values."""
     conv = get_conversion(req.conversion_name)
     unit = conv.unit if conv else ""
@@ -221,7 +227,7 @@ async def api_convert(req: ConvertRequest):
 
 
 @router.post("/checksum", response_model=ChecksumResponse)
-async def api_checksum(req: ChecksumRequest):
+async def api_checksum(req: ChecksumRequest, current_user=Depends(get_current_user)):
     """Validate all checksums for a file."""
     path = _resolve_path(req.file_path)
     with open(path, "rb") as f:
@@ -231,6 +237,6 @@ async def api_checksum(req: ChecksumRequest):
 
 
 @router.get("/conversions")
-async def api_list_conversions():
+async def api_list_conversions(current_user=Depends(get_current_user)):
     """List all available unit conversions."""
     return {"conversions": get_all_conversions()}

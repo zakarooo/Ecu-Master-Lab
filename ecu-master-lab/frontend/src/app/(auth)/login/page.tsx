@@ -22,6 +22,7 @@ export default function LoginPage() {
       const res = await api.auth.login(form);
       localStorage.setItem("token", res.access_token);
       localStorage.setItem("user", JSON.stringify(res.user));
+      document.cookie = `session=${res.access_token}; path=/; max-age=86400; SameSite=Lax`;
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "Email ou mot de passe incorrect");
@@ -75,7 +76,11 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="text-center text-gray-500 text-sm mt-6">
+            <p className="text-center text-gray-500 text-sm mt-4">
+              <Link href="/forgot-password" className="text-blue-400 hover:text-blue-300">Mot de passe oublié ?</Link>
+            </p>
+
+            <p className="text-center text-gray-500 text-sm mt-4">
               Pas encore de compte ?{" "}
               <Link href="/register" className="text-blue-400 hover:text-blue-300">Créer un compte</Link>
             </p>

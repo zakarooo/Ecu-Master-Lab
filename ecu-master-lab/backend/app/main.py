@@ -8,7 +8,8 @@ from fastapi.responses import RedirectResponse
 
 from app.core.config import settings
 from app.core.database import engine, Base, check_db_connection, list_tables
-from app.routes import auth, projects, admin
+from app.core.security import decode_access_token
+from app.routes import auth, projects, admin, expert
 from app.routes.v2 import v2_router
 
 import json
@@ -72,6 +73,7 @@ async def add_security_headers(request, call_next):
 app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(admin.router)
+app.include_router(expert.router)
 app.include_router(v2_router)
 
 
@@ -104,6 +106,18 @@ connected_clients: List[WebSocket] = []
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=4001, reason="Missing token")
+        return
+    payload = decode_access_token(token)
+    if payload is None:
+        await websocket.close(code=4001, reason="Invalid token")
+        return
+    user_id = payload.get("sub")
+    if user_id is None:
+        await websocket.close(code=4001, reason="Invalid token")
+        return
     await websocket.accept()
     connected_clients.append(websocket)
     try:

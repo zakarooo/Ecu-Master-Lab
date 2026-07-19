@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://ecu-backend-production.up.railway.app";
+
+function authHeaders(): Record<string, string> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 interface ECUModel {
   name: string;
@@ -59,11 +65,16 @@ export default function IntelligenceDashboard() {
   const [searchFilter, setSearchFilter] = useState({ ecu: "", category: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!localStorage.getItem("token")) { router.push("/login"); }
+  }, [router]);
 
   const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/api/knowledge/statistics`);
+      const res = await fetch(`${API_BASE}/api/knowledge/statistics`, { headers: authHeaders() });
       const data = await res.json();
       if (data.status === "success") {
         setStats(data.statistics);
@@ -77,7 +88,7 @@ export default function IntelligenceDashboard() {
 
   const fetchECUs = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/ecu/list`);
+      const res = await fetch(`${API_BASE}/api/ecu/list`, { headers: authHeaders() });
       const data = await res.json();
       if (data.status === "success") {
         setEcus(data.ecus);
@@ -90,7 +101,7 @@ export default function IntelligenceDashboard() {
   const fetchQuality = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/api/knowledge/quality`);
+      const res = await fetch(`${API_BASE}/api/knowledge/quality`, { headers: authHeaders() });
       const data = await res.json();
       if (data.status === "success") {
         setQuality(data.report);
@@ -116,7 +127,7 @@ export default function IntelligenceDashboard() {
       if (searchFilter.ecu) params.set("ecu", searchFilter.ecu);
       if (searchFilter.category) params.set("category", searchFilter.category);
 
-      const res = await fetch(`${API_BASE}/api/knowledge/search?${params}`);
+      const res = await fetch(`${API_BASE}/api/knowledge/search?${params}`, { headers: authHeaders() });
       const data = await res.json();
       if (data.status === "success") {
         setSearchResults(data.results);
@@ -444,6 +455,7 @@ function FileUpload() {
 
       const res = await fetch(`${API_BASE}/api/ecu/analyze?use_damos=true`, {
         method: "POST",
+        headers: authHeaders(),
         body: formData,
       });
       const data = await res.json();

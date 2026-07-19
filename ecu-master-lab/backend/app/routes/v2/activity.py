@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_admin
+from app.models.models import User, UserRole
 from app.models.new.ecu_models import ActivityLog
 from app.schemas.ecu_schemas import (
     ActivityLogCreate,
@@ -24,9 +25,11 @@ def list_activity_logs(
     limit: int = Query(50, ge=1, le=200),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     q = db.query(ActivityLog)
+    if current_user.role != UserRole.ADMIN:
+        q = q.filter(ActivityLog.user_id == current_user.id)
     if search:
         q = q.filter(ActivityLog.action.ilike(f"%{search}%"))
     items, total = paginate_query(q.order_by(ActivityLog.id.desc()), skip, limit)
@@ -37,10 +40,12 @@ def list_activity_logs(
 def get_activity_log(
     log_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     l = ActivityLogService(db).get_by_id(log_id)
     if not l:
+        raise HTTPException(404, "Activity log not found")
+    if current_user.role != UserRole.ADMIN and l.user_id != current_user.id:
         raise HTTPException(404, "Activity log not found")
     return l
 
@@ -51,8 +56,10 @@ def list_logs_by_user(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    if current_user.role != UserRole.ADMIN and user_id != current_user.id:
+        raise HTTPException(404, "Activity log not found")
     q = db.query(ActivityLog).filter(ActivityLog.user_id == user_id)
     items, total = paginate_query(q.order_by(ActivityLog.id.desc()), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
@@ -65,12 +72,14 @@ def list_logs_by_resource(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     q = db.query(ActivityLog).filter(
         ActivityLog.resource_type == resource_type,
         ActivityLog.resource_id == resource_id,
     )
+    if current_user.role != UserRole.ADMIN:
+        q = q.filter(ActivityLog.user_id == current_user.id)
     items, total = paginate_query(q.order_by(ActivityLog.id.desc()), skip, limit)
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
 

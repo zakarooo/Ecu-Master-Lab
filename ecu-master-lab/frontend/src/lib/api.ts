@@ -37,6 +37,9 @@ export const api = {
     register: (data: any) => request("/api/auth/register", { method: "POST", body: JSON.stringify(data) }),
     login: (data: any) => request("/api/auth/login", { method: "POST", body: JSON.stringify(data) }),
     me: () => request("/api/auth/me"),
+    verifyEmail: (token: string) => request("/api/auth/verify-email", { method: "POST", body: JSON.stringify({ token }) }),
+    forgotPassword: (email: string) => request("/api/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) }),
+    resetPassword: (token: string, new_password: string) => request("/api/auth/reset-password", { method: "POST", body: JSON.stringify({ token, new_password }) }),
   },
   projects: {
     list: () => request("/api/projects"),
@@ -50,14 +53,26 @@ export const api = {
     setModifications: (id: number, data: any) =>
       request(`/api/projects/${id}/modifications`, { method: "POST", body: JSON.stringify(data) }),
     process: (id: number) => request(`/api/projects/${id}/process`, { method: "POST" }),
+    downloadOriginal: (id: number) => `/api/projects/${id}/download-original`,
+    downloadVersion: (id: number, versionId: number) => `/api/projects/${id}/download/${versionId}`,
+    downloadModified: (id: number) => `/api/projects/${id}/download`,
+    analysis: (id: number) => request(`/api/projects/${id}/analysis`),
     versions: (id: number) => request(`/api/projects/${id}/versions`),
   },
   admin: {
     stats: () => request("/api/admin/stats"),
-    users: () => request("/api/admin/users"),
-    projects: () => request("/api/admin/projects"),
+    users: (params?: string) => request(`/api/admin/users${params ? `?${params}` : ""}`),
+    projects: (params?: string) => request(`/api/admin/projects${params ? `?${params}` : ""}`),
     updateUser: (id: number, data: any) => request(`/api/admin/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
-    auditLogs: () => request("/api/admin/audit-logs"),
+    deleteUser: (id: number) => request(`/api/admin/users/${id}`, { method: "DELETE" }),
+    auditLogs: (params?: string) => request(`/api/admin/audit-logs${params ? `?${params}` : ""}`),
+    deleteProject: (id: number) => request(`/api/admin/projects/${id}`, { method: "DELETE" }),
+    transferProject: (id: number, data: any) => request(`/api/admin/projects/${id}/transfer`, { method: "POST", body: JSON.stringify(data) }),
+  },
+  expert: {
+    pendingReview: () => request("/api/expert/projects/pending-review"),
+    approve: (id: number) => request(`/api/expert/projects/${id}/approve`, { method: "POST" }),
+    reject: (id: number, data: any) => request(`/api/expert/projects/${id}/reject`, { method: "POST", body: JSON.stringify(data) }),
   },
   v2: {
     manufacturers: {

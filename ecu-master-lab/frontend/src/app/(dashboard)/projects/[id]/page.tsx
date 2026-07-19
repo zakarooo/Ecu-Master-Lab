@@ -7,7 +7,8 @@ import { api } from "@/lib/api";
 import { getStatusColor, getStatusLabel } from "@/lib/utils";
 import {
   Upload, Brain, FileCheck, CheckCircle2, Download, Loader2,
-  AlertTriangle, Clock, Zap, Shield, ChevronDown, ChevronUp, Wrench
+  AlertTriangle, Clock, Zap, Shield, ChevronDown, ChevronUp, Wrench,
+  Layers, BarChart3, Map, Cpu, Hash, FileSearch
 } from "lucide-react";
 
 const ALL_MODS = [
@@ -26,6 +27,8 @@ export default function ProjectDetailPage() {
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
+  const [v2Analysis, setV2Analysis] = useState<any>(null);
+  const [analysisTab, setAnalysisTab] = useState<"summary" | "hypotheses" | "scores" | "maps" | "segments" | "checksums">("summary");
   const [selectedMods, setSelectedMods] = useState<string[]>([]);
   const [clientNotes, setClientNotes] = useState("");
   const [dragActive, setDragActive] = useState(false);
@@ -42,6 +45,11 @@ export default function ProjectDetailPage() {
       setProject(data);
       if (data.ai_analysis_json) setAnalysis(JSON.parse(data.ai_analysis_json));
       if (data.modifications) setSelectedMods(JSON.parse(data.modifications));
+
+      try {
+        const v2 = await api.projects.analysis(projectId);
+        if (v2.analysis) setV2Analysis(v2);
+      } catch {}
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -167,7 +175,7 @@ export default function ProjectDetailPage() {
             </div>
           )}
 
-          {/* AI Analysis Report */}
+          {/* AI Analysis Report — Tabs */}
           {showAnalysis && analysis && (
             <div className="glass rounded-2xl p-6 mb-6 glow-border animate-slide-up">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -175,50 +183,177 @@ export default function ProjectDetailPage() {
                 Rapport ECU AI ENGINE
               </h3>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {[
-                  { label: "ECU", value: analysis.ecu_type },
-                  { label: "Hardware", value: analysis.hw_version },
-                  { label: "Software", value: analysis.sw_version },
-                  { label: "Checksum", value: analysis.checksum_valid ? "Valide ✓" : "Invalide ✗", color: analysis.checksum_valid ? "text-green-400" : "text-red-400" },
-                ].map((item, i) => (
-                  <div key={i} className="bg-white/5 rounded-xl p-3">
-                    <div className="text-xs text-gray-500 mb-1">{item.label}</div>
-                    <div className={`text-sm font-medium ${item.color || "text-white"}`}>{item.value}</div>
-                  </div>
+              {/* Tab Navigation */}
+              <div className="flex flex-wrap gap-1 mb-6 bg-white/5 rounded-xl p-1">
+                {([
+                  { id: "summary" as const, label: "Résumé", icon: FileSearch },
+                  ...(v2Analysis?.hypotheses?.length ? [{ id: "hypotheses" as const, label: "Hypothèses", icon: Layers }] : []),
+                  ...(v2Analysis?.scores?.length ? [{ id: "scores" as const, label: "Scores", icon: BarChart3 }] : []),
+                  ...(v2Analysis?.maps?.length ? [{ id: "maps" as const, label: "Cartes", icon: Map }] : []),
+                  ...(v2Analysis?.segments?.length ? [{ id: "segments" as const, label: "Segments", icon: Cpu }] : []),
+                  ...(v2Analysis?.checksums?.length ? [{ id: "checksums" as const, label: "Checksums", icon: Hash }] : []),
+                ]).map(tab => (
+                  <button key={tab.id} onClick={() => setAnalysisTab(tab.id)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                      analysisTab === tab.id ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-white hover:bg-white/5"
+                    }`}>
+                    <tab.icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </button>
                 ))}
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-white/5 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold gradient-text">{analysis.confidence}%</div>
-                  <div className="text-xs text-gray-500">Confiance</div>
-                </div>
-                <div className="bg-white/5 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-white">{analysis.estimated_time_seconds}s</div>
-                  <div className="text-xs text-gray-500">Temps estimé</div>
-                </div>
-                <div className="bg-white/5 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-white">{analysis.map_regions?.length || 0}</div>
-                  <div className="text-xs text-gray-500">Zones carto</div>
-                </div>
-              </div>
-
-              {analysis.risks?.length > 0 && (
-                <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm font-medium text-yellow-400">Risques détectés</span>
+              {/* Tab: Summary */}
+              {analysisTab === "summary" && (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    {[
+                      { label: "ECU", value: analysis.ecu_type },
+                      { label: "Hardware", value: analysis.hw_version },
+                      { label: "Software", value: analysis.sw_version },
+                      { label: "Checksum", value: analysis.checksum_valid ? "Valide ✓" : "Invalide ✗", color: analysis.checksum_valid ? "text-green-400" : "text-red-400" },
+                    ].map((item, i) => (
+                      <div key={i} className="bg-white/5 rounded-xl p-3">
+                        <div className="text-xs text-gray-500 mb-1">{item.label}</div>
+                        <div className={`text-sm font-medium ${item.color || "text-white"}`}>{item.value}</div>
+                      </div>
+                    ))}
                   </div>
-                  {analysis.risks.map((risk: string, i: number) => (
-                    <p key={i} className="text-xs text-yellow-400/70 ml-6">{risk}</p>
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white/5 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold gradient-text">{analysis.confidence}%</div>
+                      <div className="text-xs text-gray-500">Confiance</div>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-white">{analysis.estimated_time_seconds}s</div>
+                      <div className="text-xs text-gray-500">Temps estimé</div>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-white">{analysis.map_regions?.length || 0}</div>
+                      <div className="text-xs text-gray-500">Zones carto</div>
+                    </div>
+                  </div>
+                  {analysis.risks?.length > 0 && (
+                    <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                        <span className="text-sm font-medium text-yellow-400">Risques détectés</span>
+                      </div>
+                      {analysis.risks.map((risk: string, i: number) => (
+                        <p key={i} className="text-xs text-yellow-400/70 ml-6">{risk}</p>
+                      ))}
+                    </div>
+                  )}
+                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
+                    <p className="text-sm text-blue-400">{analysis.recommendation}</p>
+                  </div>
+                </>
+              )}
+
+              {/* Tab: Hypotheses */}
+              {analysisTab === "hypotheses" && v2Analysis?.hypotheses && (
+                <div className="space-y-3">
+                  {v2Analysis.hypotheses.map((h: any, i: number) => (
+                    <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">#{h.rank}</span>
+                        <span className="text-xs text-gray-500">Score: {(h.confidence_score * 100).toFixed(1)}%</span>
+                      </div>
+                      <p className="text-sm text-white font-medium">{h.hypothesis_type}</p>
+                      <p className="text-xs text-gray-400 mt-1">{h.description}</p>
+                      {h.supporting_evidence && <p className="text-xs text-gray-500 mt-2 italic">{h.supporting_evidence}</p>}
+                    </div>
                   ))}
                 </div>
               )}
 
-              <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
-                <p className="text-sm text-blue-400">{analysis.recommendation}</p>
-              </div>
+              {/* Tab: Scores */}
+              {analysisTab === "scores" && v2Analysis?.scores && (
+                <div className="space-y-3">
+                  {v2Analysis.scores.map((s: any, i: number) => (
+                    <div key={i} className="bg-white/5 rounded-xl p-4 flex items-center justify-between border border-white/5">
+                      <div>
+                        <p className="text-sm text-white font-medium">{s.metric_name}</p>
+                        <p className="text-xs text-gray-500">{s.description}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-lg font-bold ${s.normalized_score >= 0.7 ? "text-green-400" : s.normalized_score >= 0.4 ? "text-yellow-400" : "text-red-400"}`}>
+                          {(s.normalized_score * 100).toFixed(0)}
+                        </div>
+                        <div className="text-[10px] text-gray-500">{s.category}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tab: Maps */}
+              {analysisTab === "maps" && v2Analysis?.maps && (
+                <div className="space-y-3">
+                  {v2Analysis.maps.map((m: any, i: number) => (
+                    <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-white font-medium">{m.map_name}</span>
+                        <span className="text-xs text-gray-500">{m.map_type}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="text-gray-400">Offset: <span className="text-white font-mono">{m.offset_hex}</span></div>
+                        <div className="text-gray-400">Taille: <span className="text-white">{m.size_bytes} octets</span></div>
+                        <div className="text-gray-400">Axes: <span className="text-white">{m.x_axis_count}×{m.y_axis_count}</span></div>
+                        <div className="text-gray-400">Confiance: <span className="text-blue-400">{(m.confidence * 100).toFixed(0)}%</span></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tab: Segments */}
+              {analysisTab === "segments" && v2Analysis?.segments && (
+                <div className="space-y-3">
+                  {v2Analysis.segments.map((s: any, i: number) => (
+                    <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-white font-medium">{s.segment_type}</span>
+                        <span className="text-xs text-gray-500">{s.data_type}</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="text-gray-400">Offset: <span className="text-white font-mono">{s.offset_hex}</span></div>
+                        <div className="text-gray-400">Taille: <span className="text-white">{s.size_bytes} octets</span></div>
+                        <div className="text-gray-400">Contenu: <span className="text-white">{s.content_type}</span></div>
+                      </div>
+                      {s.description && <p className="text-xs text-gray-500 mt-2">{s.description}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tab: Checksums */}
+              {analysisTab === "checksums" && v2Analysis?.checksums && (
+                <div className="space-y-3">
+                  {v2Analysis.checksums.map((c: any, i: number) => (
+                    <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-white font-medium">{c.algorithm}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded ${c.is_valid ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
+                          {c.is_valid ? "Valide ✓" : "Invalide ✗"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="text-gray-400">Offset: <span className="text-white font-mono">{c.offset_hex}</span></div>
+                        <div className="text-gray-400">Zone: <span className="text-white">{c.range_description}</span></div>
+                      </div>
+                      <div className="mt-2 text-[11px] font-mono text-gray-500 break-all">
+                        Calculé: {c.calculated_value}
+                      </div>
+                      {c.stored_value && (
+                        <div className="text-[11px] font-mono text-gray-500 break-all">
+                          Stocké: {c.stored_value}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -309,23 +444,42 @@ export default function ProjectDetailPage() {
               {project.result_checksum && (
                 <p className="text-xs text-gray-500 mb-6">SHA-256: {project.result_checksum.substring(0, 32)}...</p>
               )}
-              <button onClick={async () => {
-                const token = localStorage.getItem("token");
-                const res = await fetch(`/api/projects/${projectId}/download`, {
-                  headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) { alert("Erreur de téléchargement"); return; }
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = project.ecu_filename ? `modified_${project.ecu_filename}` : "ecu_modified.bin";
-                a.click();
-                URL.revokeObjectURL(url);
-              }} className="btn-primary inline-flex items-center gap-2 cursor-pointer">
-                <Download className="w-5 h-5" />
-                Télécharger le fichier modifié
-              </button>
+              <div className="flex items-center justify-center gap-4">
+                <button onClick={async () => {
+                  const token = localStorage.getItem("token");
+                  const res = await fetch(`/api/projects/${projectId}/download-original`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  if (!res.ok) { alert("Erreur de téléchargement de l'original"); return; }
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = project.ecu_filename ? `original_${project.ecu_filename}` : "ecu_original.bin";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }} className="btn-secondary inline-flex items-center gap-2 cursor-pointer">
+                  <Download className="w-5 h-5" />
+                  Télécharger l&apos;original
+                </button>
+                <button onClick={async () => {
+                  const token = localStorage.getItem("token");
+                  const res = await fetch(`/api/projects/${projectId}/download`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  if (!res.ok) { alert("Erreur de téléchargement"); return; }
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = project.ecu_filename ? `modified_${project.ecu_filename}` : "ecu_modified.bin";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }} className="btn-primary inline-flex items-center gap-2 cursor-pointer">
+                  <Download className="w-5 h-5" />
+                  Télécharger le fichier modifié
+                </button>
+              </div>
             </div>
           )}
         </div>

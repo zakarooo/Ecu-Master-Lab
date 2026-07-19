@@ -62,6 +62,10 @@ class User(Base):
     role = Column(SQLEnum(UserRole), default=UserRole.CLIENT)
 
     is_active = Column(Boolean, default=True)
+    is_email_verified = Column(Boolean, default=False)
+    email_verification_token = Column(String(255), nullable=True)
+    password_reset_token = Column(String(255), nullable=True)
+    password_reset_expires = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -114,6 +118,8 @@ class Project(Base):
 
     modifications = Column(Text)
 
+    rejection_reason = Column(Text)
+
     client_notes = Column(Text)
 
     result_file_path = Column(String(500))
@@ -149,6 +155,12 @@ class Project(Base):
         "FileVersion",
         back_populates="project",
         cascade="all, delete-orphan",
+    )
+
+    ecu_files = relationship(
+        "ECUFile",
+        back_populates="project",
+        foreign_keys="ECUFile.project_id",
     )
 
 

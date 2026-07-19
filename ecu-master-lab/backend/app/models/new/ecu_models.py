@@ -580,7 +580,7 @@ class ECUFile(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    project_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    project_id: Mapped[Optional[int]] = mapped_column(ForeignKey("projects.id", ondelete="SET NULL"), nullable=True)
     filename: Mapped[Optional[str]] = mapped_column(String(255))
     file_path: Mapped[Optional[str]] = mapped_column(String(500))
     file_size: Mapped[Optional[int]] = mapped_column(BigInteger)
@@ -590,13 +590,16 @@ class ECUFile(Base):
     uploaded_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-    uploaded_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    uploaded_by: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     analyses: Mapped[List["Analysis"]] = relationship(
         "Analysis", back_populates="ecu_file"
     )
     learning_datasets: Mapped[List["LearningDataset"]] = relationship(
         "LearningDataset", back_populates="ecu_file"
+    )
+    project: Mapped[Optional["Project"]] = relationship(
+        "Project", back_populates="ecu_files", foreign_keys=[project_id]
     )
 
 
