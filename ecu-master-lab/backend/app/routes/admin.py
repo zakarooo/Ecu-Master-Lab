@@ -7,6 +7,7 @@ from sqlalchemy import func
 from app.core.database import get_db
 from app.core.deps import require_admin
 from app.models.models import User, Project, ProjectStatus, AuditLog, UserRole
+from app.models.new.ecu_models import ECUFile
 from app.models.schemas import AdminStats, AdminUserUpdate, UserResponse, ProjectResponse
 from typing import List, Optional
 
@@ -123,6 +124,11 @@ def delete_project(project_id: int, db: Session = Depends(get_db), admin: User =
             shutil.rmtree(project_dir)
         except Exception:
             pass
+
+    ecu_files = db.query(ECUFile).filter(ECUFile.project_id == project_id).all()
+    for ef in ecu_files:
+        db.delete(ef)
+    db.flush()
 
     log = AuditLog(
         user_id=admin.id, action="ADMIN_DELETE_PROJECT", resource_type="project",

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import get_current_user, require_admin
+from app.core.deps import get_current_user, require_admin, require_expert_or_admin
 from app.models.new.ecu_models import AIPrediction, AIModel, Heuristic, LearningDataset
 from app.schemas.ecu_schemas import (
     AIModelCreate,
@@ -106,7 +106,7 @@ def list_predictions_by_analysis(
 def create_prediction(
     data: AIPredictionCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_expert_or_admin),
 ):
     return AIPredictionService(db).create(data)
 
@@ -156,7 +156,7 @@ def get_dataset(
 def create_dataset(
     data: LearningDatasetCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_expert_or_admin),
 ):
     return LearningDatasetService(db).create(data)
 

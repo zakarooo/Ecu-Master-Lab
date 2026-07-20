@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_expert_or_admin
 from app.models.new.ecu_models import (
     AnalysisCorrection,
     KnownChecksum,
@@ -129,7 +129,7 @@ def register_known_file(
     ecu_model_id: Optional[int] = Form(None),
     notes: str = Form(""),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_expert_or_admin),
 ):
     """Register a known ECU file and extract its features into the knowledge DB."""
     content = file.file.read()
@@ -221,7 +221,7 @@ def list_strings(
 def submit_correction(
     req: CorrectionRequest,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_expert_or_admin),
 ):
     """Submit a correction for an analysis result."""
     correction = AnalysisCorrection(

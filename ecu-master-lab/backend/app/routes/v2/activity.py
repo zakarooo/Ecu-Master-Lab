@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import get_current_user, require_admin
+from app.core.deps import get_current_user, require_admin, require_expert_or_admin
 from app.models.models import User, UserRole
 from app.models.new.ecu_models import ActivityLog
 from app.schemas.ecu_schemas import (
@@ -88,6 +88,6 @@ def list_logs_by_resource(
 def create_activity_log(
     data: ActivityLogCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_expert_or_admin),
 ):
     return ActivityLogService(db).create(data)

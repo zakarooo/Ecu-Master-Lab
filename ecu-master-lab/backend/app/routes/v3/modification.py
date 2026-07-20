@@ -102,12 +102,31 @@ class ChecksumResponse(BaseModel):
 
 # ── Helper ──────────────────────────────────────────────────────
 
-def _resolve_path(file_path: str) -> str:
-    """Resolve file path — must be within UPLOAD_DIR or a project subdirectory."""
+def _resolve_path(file_path: str, current_user_id: int = None) -> str:
+    """Resolve file path — must be within UPLOAD_DIR and owned by current_user."""
     upload_root = str(Path(settings.UPLOAD_DIR).resolve())
-    p = os.path.abspath(file_path)
+    p = str(Path(file_path).resolve())
     if not p.startswith(upload_root):
         raise HTTPException(status_code=403, detail="Access denied: path outside uploads directory")
+    if current_user_id is not None:
+        rel = p[len(upload_root):].strip(os.sep)
+        project_id_str = rel.split(os.sep)[0] if rel else ""
+        try:
+            project_id = int(project_id_str)
+        except (ValueError, IndexError):
+            raise HTTPException(status_code=403, detail="Access denied: invalid project path")
+        from app.models.models import Project
+        from app.core.database import SessionLocal
+        db = SessionLocal()
+        try:
+            project = db.query(Project).filter(
+                Project.id == project_id,
+                Project.user_id == current_user_id,
+            ).first()
+            if not project:
+                raise HTTPException(status_code=403, detail="Access denied: not your project")
+        finally:
+            db.close()
     if not os.path.isfile(p):
         raise HTTPException(status_code=404, detail="File not found: " + file_path)
     return p
@@ -118,7 +137,7 @@ def _resolve_path(file_path: str) -> str:
 @router.post("/read-map", response_model=ReadMapResponse)
 async def api_read_map(req: ReadMapRequest, current_user=Depends(get_current_user)):
     """Read a 2D calibration map from a binary file."""
-    path = _resolve_path(req.file_path)
+    path = _resolve_path(req.file_path, current_user.id)
     with open(path, "rb") as f:
         data = f.read()
     result = read_map(data, req.offset, req.rows, req.cols, req.data_type, req.byte_order, name=req.name)
@@ -143,7 +162,7 @@ async def api_read_map(req: ReadMapRequest, current_user=Depends(get_current_use
 @router.post("/write-map", response_model=WriteMapResponse)
 async def api_write_map(req: WriteMapRequest, current_user=Depends(get_current_user)):
     """Write modified map values to a new file with checksum recalculation."""
-    path = _resolve_path(req.file_path)
+    path = _resolve_path(req.file_path, current_user.id)
     with open(path, "rb") as f:
         data = f.read()
 
@@ -197,7 +216,7 @@ async def api_write_map(req: WriteMapRequest, current_user=Depends(get_current_u
 @router.post("/read-value")
 async def api_read_value(req: ReadMapRequest, current_user=Depends(get_current_user)):
     """Read a single value from a binary file at a specific offset."""
-    path = _resolve_path(req.file_path)
+    path = _resolve_path(req.file_path, current_user.id)
     with open(path, "rb") as f:
         data = f.read()
     result = read_single_value(data, req.offset, req.data_type, req.byte_order)
@@ -228,7 +247,7 @@ async def api_convert(req: ConvertRequest, current_user=Depends(get_current_user
 @router.post("/checksum", response_model=ChecksumResponse)
 async def api_checksum(req: ChecksumRequest, current_user=Depends(get_current_user)):
     """Validate all checksums for a file."""
-    path = _resolve_path(req.file_path)
+    path = _resolve_path(req.file_path, current_user.id)
     with open(path, "rb") as f:
         data = f.read()
     info = get_checksum_info(data, req.ecu_model)

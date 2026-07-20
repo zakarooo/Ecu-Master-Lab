@@ -1,5 +1,6 @@
 import json
 import os
+import hashlib
 import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from fastapi.responses import FileResponse
@@ -377,6 +378,11 @@ def download_result(project_id: int, db: Session = Depends(get_db), current_user
     if not os.path.exists(project.result_file_path):
         raise HTTPException(status_code=404, detail="Fichier résultat introuvable")
 
+    with open(project.result_file_path, "rb") as f:
+        actual_hash = hashlib.sha256(f.read()).hexdigest()
+    if actual_hash != project.result_checksum:
+        raise HTTPException(status_code=500, detail="Fichier corrompu: hash SHA-256 invalide")
+
     return FileResponse(
         project.result_file_path,
         filename=f"ECU_Modified_{project.ecu_filename}",
@@ -395,6 +401,11 @@ def download_original(project_id: int, db: Session = Depends(get_db), current_us
 
     if not os.path.exists(project.ecu_original_backup):
         raise HTTPException(status_code=404, detail="Fichier original introuvable sur le serveur")
+
+    with open(project.ecu_original_backup, "rb") as f:
+        actual_hash = hashlib.sha256(f.read()).hexdigest()
+    if actual_hash != project.ecu_file_hash:
+        raise HTTPException(status_code=500, detail="Fichier original corrompu: hash SHA-256 invalide")
 
     return FileResponse(
         project.ecu_original_backup,
@@ -415,6 +426,11 @@ def download_version(project_id: int, version_id: int, db: Session = Depends(get
 
     if not os.path.exists(version.file_path):
         raise HTTPException(status_code=404, detail="Fichier de version introuvable")
+
+    with open(version.file_path, "rb") as f:
+        actual_hash = hashlib.sha256(f.read()).hexdigest()
+    if actual_hash != version.file_hash:
+        raise HTTPException(status_code=500, detail="Fichier de version corrompu: hash SHA-256 invalide")
 
     label = (version.label or f"version_{version.version_number}").replace(" ", "_")
     return FileResponse(
