@@ -95,8 +95,8 @@ export const api = {
       get: (id: number) => request(`/api/v2/referentiel/protocols/${id}`),
     },
     ecuFiles: {
-      list: (params?: string) => request(`/api/v2/analysis/ecu-files${params ? `?${params}` : ""}`),
-      get: (id: number) => request(`/api/v2/analysis/ecu-files/${id}`),
+      list: (params?: string) => request(`/api/v2/analysis/files${params ? `?${params}` : ""}`),
+      get: (id: number) => request(`/api/v2/analysis/files/${id}`),
     },
     analyses: {
       list: (params?: string) => request(`/api/v2/analysis/analyses${params ? `?${params}` : ""}`),
@@ -110,25 +110,25 @@ export const api = {
       return request("/api/v2/analysis/upload", { method: "POST", body: form });
     },
     vehicleBrands: {
-      list: (params?: string) => request(`/api/v2/vehicles/vehicle-brands${params ? `?${params}` : ""}`),
+      list: (params?: string) => request(`/api/v2/vehicles/brands${params ? `?${params}` : ""}`),
     },
     vehicleModels: {
-      list: (params?: string) => request(`/api/v2/vehicles/vehicle-models${params ? `?${params}` : ""}`),
+      list: (params?: string) => request(`/api/v2/vehicles/models${params ? `?${params}` : ""}`),
     },
     memoryLayouts: {
-      list: (params?: string) => request(`/api/v2/memory/memory-layouts${params ? `?${params}` : ""}`),
+      list: (params?: string) => request(`/api/v2/memory/layouts${params ? `?${params}` : ""}`),
     },
     ecuSignatures: {
       list: (params?: string) => request(`/api/v2/signatures/ecu-signatures${params ? `?${params}` : ""}`),
     },
     mapCategories: {
-      list: (params?: string) => request(`/api/v2/maps/map-categories${params ? `?${params}` : ""}`),
+      list: (params?: string) => request(`/api/v2/maps/categories${params ? `?${params}` : ""}`),
     },
     mapUnits: {
-      list: (params?: string) => request(`/api/v2/maps/map-units${params ? `?${params}` : ""}`),
+      list: (params?: string) => request(`/api/v2/maps/units${params ? `?${params}` : ""}`),
     },
     maps: {
-      list: (params?: string) => request(`/api/v2/maps/maps${params ? `?${params}` : ""}`),
+      list: (params?: string) => request(`/api/v2/maps${params ? `?${params}` : ""}`),
     },
   },
 };

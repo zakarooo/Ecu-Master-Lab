@@ -72,8 +72,8 @@
 
 | Fonction | Méthode | Backend Endpoint | Statut |
 |----------|---------|-----------------|--------|
-| `api.v2.ecuFiles.list(params)` | GET | `/api/v2/analysis/ecu-files` | ❌ **404** — backend: `/files` |
-| `api.v2.ecuFiles.get(id)` | GET | `/api/v2/analysis/ecu-files/{id}` | ❌ **404** |
+| `api.v2.ecuFiles.list(params)` | GET | `/api/v2/analysis/ecu-files` | ✅ (fixed Phase 4) |
+| `api.v2.ecuFiles.get(id)` | GET | `/api/v2/analysis/files/{id}` | ✅ (fixed Phase 4) |
 | `api.v2.analyses.list(params)` | GET | `/api/v2/analysis/analyses` | ✅ |
 | `api.v2.analyses.get(id)` | GET | `/api/v2/analysis/analyses/{id}` | ✅ |
 | `api.v2.analyses.run(fileId)` | POST | `/api/v2/analysis/analyses/{id}/run` | ✅ |
@@ -83,14 +83,14 @@
 
 | Fonction | Méthode | Backend Endpoint | Statut |
 |----------|---------|-----------------|--------|
-| `api.v2.vehicleBrands.list(params)` | GET | `/api/v2/vehicles/vehicle-brands` | ❌ **404** — backend: `/brands` |
-| `api.v2.vehicleModels.list(params)` | GET | `/api/v2/vehicles/vehicle-models` | ❌ **404** — backend: `/models` |
+| `api.v2.vehicleBrands.list(params)` | GET | `/api/v2/vehicles/brands` | ✅ (fixed Phase 4) |
+| `api.v2.vehicleModels.list(params)` | GET | `/api/v2/vehicles/models` | ✅ (fixed Phase 4) |
 
 ### V2 Memory
 
 | Fonction | Méthode | Backend Endpoint | Statut |
 |----------|---------|-----------------|--------|
-| `api.v2.memoryLayouts.list(params)` | GET | `/api/v2/memory/memory-layouts` | ❌ **404** — backend: `/layouts` |
+| `api.v2.memoryLayouts.list(params)` | GET | `/api/v2/memory/layouts` | ✅ (fixed Phase 4) |
 
 ### V2 Signatures
 
@@ -102,9 +102,9 @@
 
 | Fonction | Méthode | Backend Endpoint | Statut |
 |----------|---------|-----------------|--------|
-| `api.v2.mapCategories.list(params)` | GET | `/api/v2/maps/map-categories` | ❌ **404** — backend: `/categories` |
-| `api.v2.mapUnits.list(params)` | GET | `/api/v2/maps/map-units` | ❌ **404** — backend: `/units` |
-| `api.v2.maps.list(params)` | GET | `/api/v2/maps/maps` | ❌ **404** — backend: `/maps` |
+| `api.v2.mapCategories.list(params)` | GET | `/api/v2/maps/categories` | ✅ (fixed Phase 4) |
+| `api.v2.mapUnits.list(params)` | GET | `/api/v2/maps/units` | ✅ (fixed Phase 4) |
+| `api.v2.maps.list(params)` | GET | `/api/v2/maps` | ✅ (fixed Phase 4) |
 
 ---
 
@@ -125,11 +125,11 @@
 | Intelligence | `/intelligence` | ⚠️ | Bypass api.ts, raw fetch, fallback URL hardcodée |
 | New Project | `/projects/new` | ✅ | |
 | Project Detail | `/projects/[id]` | ✅ | Download via raw fetch |
-| Analysis List | `/analysis` | ❌ | ecuFiles.list → 404 |
+| Analysis List | `/analysis` | ✅ (fixed Phase 4) | ecuFiles.list now points to correct `/files` |
 | Analysis Upload | `/analysis/upload` | ⚠️ | Stub redirect vers /projects/new |
 | Analysis Detail | `/analysis/[id]` | ⚅ | Données plates (pas de full analysis) |
-| Reference Home | `/reference` | ❌ | 5 counts à 0 (URLs cassées) |
-| Reference [type] | `/reference/[type]` | ❌ | 4 types cassés |
+| Reference Home | `/reference` | ✅ (fixed Phase 4) | 5 counts now resolve correctly |
+| Reference [type] | `/reference/[type]` | ✅ (fixed Phase 4) | 4 type routes now resolve correctly |
 | Reference Manufacturers | `/reference/manufacturers` | ✅ | |
 | Reference ECU Models | `/reference/ecu-models` | ✅ | |
 | Reference Processors | `/reference/processors` | ✅ | |
@@ -137,20 +137,18 @@
 
 ---
 
-## 3. URLs Cassées (8)
+## 3. URLs Cassées (0) — Toutes corrigées Phase 4
 
 | Ligne api.ts | Frontend URL | Backend URL | Fix |
 |-------------|-------------|-------------|-----|
-| 98 | `/api/v2/analysis/ecu-files` | `/api/v2/analysis/files` | `ecu-files` → `files` |
-| 99 | `/api/v2/analysis/ecu-files/{id}` | `/api/v2/analysis/files/{id}` | `ecu-files` → `files` |
-| 113 | `/api/v2/vehicles/vehicle-brands` | `/api/v2/vehicles/brands` | `vehicle-brands` → `brands` |
-| 116 | `/api/v2/vehicles/vehicle-models` | `/api/v2/vehicles/models` | `vehicle-models` → `models` |
-| 119 | `/api/v2/memory/memory-layouts` | `/api/v2/memory/layouts` | `memory-layouts` → `layouts` |
-| 125 | `/api/v2/maps/map-categories` | `/api/v2/maps/categories` | `map-categories` → `categories` |
-| 128 | `/api/v2/maps/map-units` | `/api/v2/maps/units` | `map-units` → `units` |
-| 131 | `/api/v2/maps/maps` | `/api/v2/maps` | `maps/maps` → `maps` |
-
-**Corrigées en Phase 4.**
+| 98 | `/api/v2/analysis/files` | `/api/v2/analysis/files` | ✅ `ecu-files` → `files` |
+| 99 | `/api/v2/analysis/files/{id}` | `/api/v2/analysis/files/{id}` | ✅ `ecu-files` → `files` |
+| 113 | `/api/v2/vehicles/brands` | `/api/v2/vehicles/brands` | ✅ `vehicle-brands` → `brands` |
+| 116 | `/api/v2/vehicles/models` | `/api/v2/vehicles/models` | ✅ `vehicle-models` → `models` |
+| 119 | `/api/v2/memory/layouts` | `/api/v2/memory/layouts` | ✅ `memory-layouts` → `layouts` |
+| 125 | `/api/v2/maps/categories` | `/api/v2/maps/categories` | ✅ `map-categories` → `categories` |
+| 128 | `/api/v2/maps/units` | `/api/v2/maps/units` | ✅ `map-units` → `units` |
+| 131 | `/api/v2/maps` | `/api/v2/maps` | ✅ `maps/maps` → `maps` |
 
 ---
 
